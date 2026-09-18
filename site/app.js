@@ -305,7 +305,7 @@ function catalogRowsForSlot(slot){
 function gearCatalogOptions(slot,current){
   const c=getChar(),g=gearState[slot];
   if(isExTier(g.tier)){
-    if(c.EXSLOT===slot && c.EXSTAT){
+    if(hasExclusiveForTier(c,slot,g.tier)){
       const item=matchingCatalogExclusive(c,slot,g.tier);
       const label=(item&&item.name_en?item.name_en:(c.EXNAME||"Exclusive Gear"))+" · "+g.tier+" · EX";
       const value=item?item.variant_id:"__auto_ex__";
@@ -324,6 +324,11 @@ function isExTier(tier){return /^EX\s+(R|SR|UR)$/.test(String(tier||""));}
 function exKeyForTier(tier){
   return tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":tier==="EX R"?"EX R":null;
 }
+function hasExclusiveForTier(c,slot,tier){
+  const key=exKeyForTier(tier);
+  const raw=key?c[key]:null;
+  return !!(key && c.EXSLOT===slot && c.EXSTAT && raw!==null && raw!==undefined && raw!=="" && raw!=="-");
+}
 function matchingCatalogExclusive(c,slot,tier){
   return gearCatalog.find(function(r){
     return r.category==="Exclusive" && r.slot===slot && r.tier===tier && catalogMatchesCharacter(r,c);
@@ -331,7 +336,7 @@ function matchingCatalogExclusive(c,slot,tier){
 }
 function syncExclusiveGearForSlot(slot){
   const c=getChar(),g=gearState[slot];
-  if(isExTier(g.tier) && c.EXSLOT===slot && c.EXSTAT){
+  if(isExTier(g.tier) && hasExclusiveForTier(c,slot,g.tier)){
     const item=matchingCatalogExclusive(c,slot,g.tier);
     g.catalogId=item?item.variant_id:"";
     g.autoExclusive=true;

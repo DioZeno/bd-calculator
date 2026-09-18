@@ -447,12 +447,39 @@ function wire(){
 
 function addStat(obj,k,v){if(k)obj[k]=(obj[k]||0)+(Number(v)||0);}
 function exValueFor(c,tier,slot,g){
-  if(!String(tier).startsWith("EX")||c.EXSLOT!==slot||!c.EXSTAT)return null;
+  if(!String(tier).startsWith("EX"))return null;
   const named=g&&g.catalogId?getCatalogGear(g.catalogId):null;
-  if(named&&named.category==="Exclusive"&&!catalogMatchesCharacter(named,c))return null;
+
+  // For named BD2DB exclusive gear, the catalog is the authority for the
+  // exclusive stat type and slot. The copied calculator remains the authority
+  // for the character's exact EX R / SR / UR numeric value.
+  if(named){
+    if(named.category!=="Exclusive"||!catalogMatchesCharacter(named,c))return null;
+    const stats=abilityTokens(named.extra_ability);
+    const stat=stats[0]||c.EXSTAT;
+    if(!stat)return null;
+    const key=tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":"EX R";
+    const raw=c[key];
+    if(raw==="-"||raw===""||raw==null)return null;
+    return {
+      stat:stat,
+      value:Number(raw)||0,
+      name:named.name_en||c.EXNAME||"Exclusive Gear",
+      source:"BD2DB"
+    };
+  }
+
+  // Manual EX mode mirrors the spreadsheet: an EX tier in the character's
+  // exclusive slot automatically receives that character's exclusive bonus.
+  if(c.EXSLOT!==slot||!c.EXSTAT)return null;
   const key=tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":"EX R",raw=c[key];
   if(raw==="-"||raw===""||raw==null)return null;
-  return {stat:c.EXSTAT,value:Number(raw)||0};
+  return {
+    stat:c.EXSTAT,
+    value:Number(raw)||0,
+    name:c.EXNAME||"Exclusive Gear",
+    source:"Sheet"
+  };
 }
 function mainGearValue(g,stat){
   const m=gearTables.main[g.tier]||{},ref=gearTables.refine[g.tier]||{};
@@ -565,7 +592,15 @@ function render(){
   $("#rarityBadge").textContent="★".repeat(Number(c.RARITY)||5);
   $("#elementSigil").textContent=(c.ELE||"S").slice(0,1);$("#portraitInitial").textContent=(c.Name||"?").slice(0,1).toUpperCase();$("#portraitElement").textContent=c.ELE||"Element";
   $("#charElement").textContent=c.ELE||"—";$("#detailElement").textContent=c.ELE||"—";$("#charRes").textContent=c.RES||"—";
-  $("#detailExclusive").textContent=c.EXNAME?(c.EXNAME+" · "+c.EXSTAT):"—";$("#charEx").textContent=c.EXNAME?(c.EXNAME+" · "+c.EXSTAT):"—";
+  const activeExclusive=Object.keys(gearState).map(function(slot){
+    const g=gearState[slot];
+    return exValueFor(c,g.tier,slot,g);
+  }).find(Boolean);
+  const exclusiveLabel=activeExclusive
+    ? (activeExclusive.name+" · "+activeExclusive.stat+" "+displayStat(activeExclusive.stat,activeExclusive.value))
+    : (c.EXNAME?(c.EXNAME+" · "+c.EXSTAT):"—");
+  $("#detailExclusive").textContent=exclusiveLabel;
+  $("#charEx").textContent=exclusiveLabel;
   $("#charAttackType").textContent=r.atkKey==="ATK"?"Physical":"Magic";$("#detailAttackType").textContent=$("#charAttackType").textContent;$("#detailTarget").textContent=(getCostume()?.target)||c.TARGET||"—";
 
   $("#engraveLifeLabel").textContent="Life · "+(c.ENG_LIFE||"—");$("#engraveStrengthLabel").textContent="Strength · "+(c.ENG_STR||"—");$("#engravePerseveranceLabel").textContent="Perseverance · "+(c.ENG_PSV||"—");
@@ -585,7 +620,9 @@ function render(){
     card.querySelector(".gearTier").classList.toggle("exclusiveTier",!!ex);
     const named=getCatalogGear(g.catalogId);
     card.querySelector(".exMark").textContent=ex?"EX":named?(named.category==="Monster"?"FIEND":""):"";
-    card.querySelector(".exclusiveValue").innerHTML=ex?("<span>"+ex.stat+"</span><b>"+displayStat(ex.stat,ex.value)+"</b>"):"<span>-</span><b>-</b>";
+    const exBox=card.querySelector(".exclusiveValue");
+    exBox.innerHTML=ex?("<span>"+ex.stat+"</span><b>"+displayStat(ex.stat,ex.value)+"</b>"):"<span>-</span><b>-</b>";
+    exBox.title=ex?(ex.name+" · "+ex.stat+" "+displayStat(ex.stat,ex.value)):"No exclusive bonus";
     const a=card.querySelector('[data-value="main1"]'),b=card.querySelector('[data-value="main2"]');
     if(a)a.textContent=displayStat(g.main1,mainGearValue(g,g.main1));if(b)b.textContent=displayStat(g.main2,mainGearValue(g,g.main2));
     g.subs.forEach(function(stat,i){const out=card.querySelector('[data-value="sub'+i+'"]');if(out)out.textContent=displayStat(stat,subGearValue(g,stat));});

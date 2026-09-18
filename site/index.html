@@ -20,13 +20,31 @@
       <div class="topActions">
         <button id="resetBtn" type="button">Reset</button>
         <a class="buttonLike" target="_blank" rel="noreferrer"
-           href="https://docs.google.com/spreadsheets/d/1w5S3YpKmWAFoRdazR7MtmzL20LD0K9DCt0WvdQXsjwA/edit?gid=1780625725#gid=1780625725">Source Sheet</a>
+           href="https://docs.google.com/spreadsheets/d/1aNXv7zzY3G4YqqRhInpfIN9ei4skCf2iGYCG9oYyQ1o/edit?gid=1780625725#gid=1780625725">Source Sheet</a>
         <div class="themeDock" aria-label="Theme">
           <button type="button" data-theme="light" class="active">Light</button>
           <button type="button" data-theme="dark">Dark</button>
         </div>
       </div>
     </div>
+
+    <section class="buildRibbon sheetPanel">
+      <div class="buildRibbonTitle">
+        <span>BUILD</span>
+        <strong>Character & Costume</strong>
+      </div>
+      <label><span>Character</span><select id="buildCharacter" aria-label="Build character"></select></label>
+      <label class="costumeControl"><span>Costume</span><select id="costume" aria-label="Costume"></select></label>
+      <label><span>Upgrade</span><select id="dupe" aria-label="Costume upgrade">
+        <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
+        <option value="3">+3</option><option value="4">+4</option><option value="5" selected>+5</option>
+      </select></label>
+      <label><span>Burst</span><select id="burst" aria-label="Burst"><option value="0">None</option></select></label>
+      <div class="buildSource">
+        <span>Catalog</span>
+        <strong id="catalogCount">—</strong>
+      </div>
+    </section>
 
     <div class="calculatorGrid">
       <aside class="leftSheet sheetPanel">
@@ -77,14 +95,15 @@
               </div>
               <div class="skillMain">
                 <div class="skillTitleRow">
-                  <strong>Damage Test</strong>
+                  <strong id="skillTitle">Damage Test</strong>
                   <span id="targetBadge">Target</span>
                 </div>
                 <div class="skillMeta">
                   <label>Skill <input id="skillMult" type="number" step="1" value="100"><span>% ATK</span></label>
                   <label>Hits <input id="hits" type="number" min="1" max="30" value="1"></label>
                 </div>
-                <p id="skillDescription">Estimate skill damage using the selected character, gear, buffs, enemy resistance, crit and chain settings.</p>
+                <p id="skillDescription">Select a costume to view its skill and upgrade progression.</p>
+                <div id="skillProgression" class="skillProgression"></div>
               </div>
             </div>
             <div class="skillOptions">
@@ -124,6 +143,26 @@
                 <tr><th>Final Property</th><td id="detailProperty">—</td><th>Target</th><td id="detailTarget">—</td></tr>
               </tbody>
             </table>
+            <section class="progressionBox">
+              <div class="progressionHead">
+                <strong>Progression</strong>
+                <small>Engraving · Awakening · Potentials</small>
+              </div>
+              <div class="progressionGrid">
+                <label><span id="engraveLifeLabel">Life</span><select id="engraveLife"></select></label>
+                <label><span id="engraveStrengthLabel">Strength</span><select id="engraveStrength"></select></label>
+                <label><span id="engravePerseveranceLabel">Perseverance</span><select id="engravePerseverance"></select></label>
+                <label class="awakeningToggle"><span>Awakening</span><input id="awakening" type="checkbox" checked></label>
+              </div>
+              <div class="potentialToggles">
+                <label><input id="potPermanent" type="checkbox" checked><span>Permanent</span></label>
+                <label><input id="potMinor1" type="checkbox" checked><span>Minor 1</span></label>
+                <label><input id="potMinor2" type="checkbox" checked><span>Minor 2</span></label>
+                <label><input id="potMajor1" type="checkbox" checked><span>Major 1</span></label>
+                <label><input id="potMajor2" type="checkbox" checked><span>Major 2</span></label>
+              </div>
+              <div id="burstInfo" class="burstInfo">No Burst data for this costume.</div>
+            </section>
             <div id="breakdown" class="breakdown"></div>
           </section>
         </div>

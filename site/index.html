@@ -1,124 +1,158 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#0b1020" />
+  <meta name="theme-color" content="#3f3f3f" />
   <title>Brown Dust II Gear Calculator</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div class="themeDock" aria-label="Theme">
-    <button type="button" data-theme="dark" class="active">Dark</button>
-    <button type="button" data-theme="light">Light</button>
-  </div>
-
-  <main class="shell">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">Brown Dust II · Gear Calculator</p>
-        <h1>Build. Compare. Optimize.</h1>
-        <p class="subtitle">
-          A browser version of Kane's Brown Dust II Gear Calculator, styled after the DNA Wedge Tracker.
-          Character and gear lookup data are loaded from the source Google Sheet when available.
-        </p>
-        <p id="dataStatus" class="dataNote">Loading calculator data…</p>
+  <main class="sheetShell">
+    <div class="topBar">
+      <div class="brand">
+        <span class="brandMark">S</span>
+        <div>
+          <strong>Brown Dust II Gear Calculator</strong>
+          <small id="dataStatus">Loading calculator data…</small>
+        </div>
       </div>
-      <div class="actions">
-        <button id="resetBtn" type="button">Reset build</button>
+      <div class="topActions">
+        <button id="resetBtn" type="button">Reset</button>
         <a class="buttonLike" target="_blank" rel="noreferrer"
-           href="https://docs.google.com/spreadsheets/d/1w5S3YpKmWAFoRdazR7MtmzL20LD0K9DCt0WvdQXsjwA/edit?gid=1780625725#gid=1780625725">Source sheet</a>
+           href="https://docs.google.com/spreadsheets/d/1w5S3YpKmWAFoRdazR7MtmzL20LD0K9DCt0WvdQXsjwA/edit?gid=1780625725#gid=1780625725">Source Sheet</a>
+        <div class="themeDock" aria-label="Theme">
+          <button type="button" data-theme="light" class="active">Light</button>
+          <button type="button" data-theme="dark">Dark</button>
+        </div>
       </div>
-    </header>
-
-    <section class="stats" aria-label="Build summary">
-      <article><span>HP</span><strong id="sumHp">—</strong></article>
-      <article><span id="sumAtkLabel">ATK</span><strong id="sumAtk">—</strong></article>
-      <article><span>Crit Rate</span><strong id="sumCr">—</strong></article>
-      <article><span>Crit DMG</span><strong id="sumCdmg">—</strong></article>
-      <article><span>Skill Damage</span><strong id="sumDamage">—</strong></article>
-    </section>
-
-    <div class="layout">
-      <section class="panel characterPanel">
-        <div class="panelHead">
-          <div><span class="sectionLabel">Character</span><h2>Base setup</h2></div>
-          <span id="rarityBadge" class="rarity gold">★★★★★</span>
-        </div>
-
-        <div class="formGrid two">
-          <label><span>Character</span><select id="character"></select></label>
-          <label><span>Level</span><select id="level"></select></label>
-          <label><span>Collection ATK / MATK</span><input id="collectionAtk" type="number" step="1" value="80" /><small>%</small></label>
-          <label><span>Collection HP</span><input id="collectionHp" type="number" step="1" value="80" /><small>%</small></label>
-          <label><span>External ATK / MATK</span><input id="externalAtk" type="number" step="1" value="0" /><small>%</small></label>
-          <label><span>External Crit Rate</span><input id="externalCr" type="number" step="0.1" value="0" /><small>%</small></label>
-          <label><span>External Crit DMG</span><input id="externalCdmg" type="number" step="0.1" value="0" /><small>%</small></label>
-          <label><span>External Property DMG</span><input id="externalEle" type="number" step="0.1" value="0" /><small>%</small></label>
-        </div>
-
-        <div class="identityCard">
-          <div><span>Element</span><strong id="charElement">—</strong></div>
-          <div><span>Resistance</span><strong id="charRes">—</strong></div>
-          <div><span>Exclusive</span><strong id="charEx">—</strong></div>
-          <div><span>Attack type</span><strong id="charAttackType">—</strong></div>
-        </div>
-      </section>
-
-      <section class="panel damagePanel">
-        <div class="panelHead">
-          <div><span class="sectionLabel">Damage</span><h2>Skill test</h2></div>
-          <span class="pill">local formula</span>
-        </div>
-        <div class="formGrid two">
-          <label><span>Skill multiplier</span><input id="skillMult" type="number" step="1" value="100" /><small>% ATK</small></label>
-          <label><span>Hits</span><input id="hits" type="number" min="1" max="30" value="1" /></label>
-          <label><span>Initial chains</span><input id="chains" type="number" min="0" value="0" /></label>
-          <label><span>Chain buff</span><input id="chainBuff" type="number" step="0.1" value="0" /><small>% / chain</small></label>
-          <label><span>Enemy DEF / MRES</span><input id="enemyRes" type="number" step="0.1" value="0" /><small>%</small></label>
-          <label><span>Damage dealt multiplier</span><input id="dmgMult" type="number" step="0.01" value="1" /><small>×</small></label>
-        </div>
-        <div class="switchRow">
-          <label class="check"><input id="advantage" type="checkbox" checked /><span>Element advantage</span></label>
-          <label class="check"><input id="critical" type="checkbox" checked /><span>Force critical</span></label>
-          <label class="check"><input id="expectedCrit" type="checkbox" /><span>Use expected crit</span></label>
-        </div>
-        <div class="damageResult">
-          <span>Total estimated damage</span>
-          <strong id="damageBig">—</strong>
-          <small id="damageExplain">—</small>
-        </div>
-      </section>
     </div>
 
-    <section class="panel gearPanel">
-      <div class="panelHead">
-        <div><span class="sectionLabel">Equipment</span><h2>Five gear slots</h2></div>
-        <span class="muted">Main ×2 + refinement · 3 substats</span>
-      </div>
-      <div id="gearGrid" class="gearGrid"></div>
-    </section>
+    <div class="calculatorGrid">
+      <aside class="leftSheet sheetPanel">
+        <div class="characterHeader">
+          <span class="elementSigil" id="elementSigil">S</span>
+          <select id="character" aria-label="Character"></select>
+          <span id="rarityBadge" class="stars">★★★★★</span>
+        </div>
 
-    <section class="panel breakdownPanel">
-      <div class="panelHead">
-        <div><span class="sectionLabel">Breakdown</span><h2>Final stats</h2></div>
-        <span class="muted">Sheet-style aggregation</span>
-      </div>
-      <div id="breakdown" class="breakdown"></div>
-      <details class="formulaNote">
-        <summary>Calculation notes</summary>
-        <p>
-          Level scaling follows the source sheet: ATK/MATK = base × (1 + level/10), HP = base × (1 + level/5), with the sheet's MAX values used at cap.
-          Gear main stats use two copies of the tier main value plus refinement increments; substats use the tier substat values.
-          Crit damage is treated as bonus damage (50% = ×1.5). With advantage enabled, property damage uses the sheet's base 50% plus gear/buff property damage.
-          Chain damage adds 10% per chain plus the optional chain-buff input.
-        </p>
-      </details>
-    </section>
+        <section class="statTable">
+          <div class="statRow"><span>♥</span><b>HP</b><strong id="sumHp">—</strong></div>
+          <div class="statRow"><span>⚔</span><b id="sumAtkLabel">ATK</b><strong id="sumAtk">—</strong></div>
+          <div class="statRow"><span>◎</span><b>Crit Rate</b><strong id="sumCr">—</strong></div>
+          <div class="statRow"><span>✦</span><b>Crit DMG</b><strong id="sumCdmg">—</strong></div>
+          <div class="statRow"><span>◈</span><b>DEF</b><strong id="leftDef">—</strong></div>
+          <div class="statRow"><span>◉</span><b>Magic Resist</b><strong id="leftMres">—</strong></div>
+          <div class="statRow"><span>§</span><b id="elementDamageLabel">Property DMG</b><strong id="leftProperty">—</strong></div>
+          <div class="statRow"><span>◌</span><b id="resistLabel">Resistance</b><strong id="leftResist">—</strong></div>
+        </section>
 
-    <footer>
-      <span>Data source: “Copy of Brown Dust II — Gear Calculator” by Kane.</span>
-      <span>Static GitHub Pages build; no account or server required.</span>
+        <section class="miniSection">
+          <h3>Collection Bonus</h3>
+          <label class="miniRow"><span>⚔</span><b>ATK / MATK</b><span class="cellInput"><input id="collectionAtk" type="number" step="1" value="80"><em>%</em></span></label>
+          <label class="miniRow"><span>♪</span><b>Magic ATK</b><span class="readOnlyCell">same</span></label>
+          <label class="miniRow"><span>♥</span><b>HP</b><span class="cellInput"><input id="collectionHp" type="number" step="1" value="80"><em>%</em></span></label>
+        </section>
+
+        <section class="miniSection">
+          <h3>External Buffs</h3>
+          <label class="miniRow"><span>⚔</span><b>ATK / MATK</b><span class="cellInput"><input id="externalAtk" type="number" step="1" value="0"><em>%</em></span></label>
+          <label class="miniRow"><span>◎</span><b>Crit Rate</b><span class="cellInput"><input id="externalCr" type="number" step="0.1" value="0"><em>%</em></span></label>
+          <label class="miniRow"><span>✦</span><b>Crit DMG</b><span class="cellInput"><input id="externalCdmg" type="number" step="0.1" value="0"><em>%</em></span></label>
+          <label class="miniRow"><span>§</span><b>Property DMG</b><span class="cellInput"><input id="externalEle" type="number" step="0.1" value="0"><em>%</em></span></label>
+        </section>
+      </aside>
+
+      <section class="centerArea">
+        <section class="gearSheet sheetPanel">
+          <div id="gearGrid" class="gearGrid"></div>
+        </section>
+
+        <div class="lowerGrid">
+          <section class="skillSheet sheetPanel">
+            <div class="skillTop">
+              <div class="portraitPlaceholder">
+                <span id="portraitInitial">?</span>
+                <small id="portraitElement">Element</small>
+              </div>
+              <div class="skillMain">
+                <div class="skillTitleRow">
+                  <strong>Damage Test</strong>
+                  <span id="targetBadge">Target</span>
+                </div>
+                <div class="skillMeta">
+                  <label>Skill <input id="skillMult" type="number" step="1" value="100"><span>% ATK</span></label>
+                  <label>Hits <input id="hits" type="number" min="1" max="30" value="1"></label>
+                </div>
+                <p id="skillDescription">Estimate skill damage using the selected character, gear, buffs, enemy resistance, crit and chain settings.</p>
+              </div>
+            </div>
+            <div class="skillOptions">
+              <label><input id="critical" type="checkbox" checked> Critical</label>
+              <label><input id="expectedCrit" type="checkbox"> Expected Crit</label>
+              <span id="charAttackType">—</span>
+            </div>
+            <div class="damageTotal">
+              <span>Total DMG</span>
+              <strong id="damageBig">—</strong>
+              <small id="damageExplain">—</small>
+            </div>
+            <div class="skillFooter">
+              <span>Total DMG</span>
+              <b id="sumDamage">—</b>
+              <span class="tag" id="charEx">—</span>
+            </div>
+          </section>
+
+          <section class="potentialSheet sheetPanel">
+            <div class="potentialHeader">
+              <strong>Build Details</strong>
+              <span id="charElement">—</span>
+            </div>
+            <div class="potentialTop">
+              <div><span>HP</span><b id="gearHpFlat">0</b></div>
+              <div><span id="gearAtkLabel">ATK</span><b id="gearAtkFlat">0</b></div>
+              <div><span>DEF</span><b id="gearDef">0%</b></div>
+              <div><span id="gearAtkPctLabel">ATK%</span><b id="gearAtkPct">0%</b></div>
+              <div><span>CDMG</span><b id="gearCdmg">0%</b></div>
+            </div>
+            <table class="detailTable">
+              <tbody>
+                <tr><th>Attack Type</th><td id="detailAttackType">—</td><th>Resistance</th><td id="charRes">—</td></tr>
+                <tr><th>Exclusive</th><td id="detailExclusive">—</td><th>Element</th><td id="detailElement">—</td></tr>
+                <tr><th>Gear HP%</th><td id="detailHpPct">—</td><th>Gear CR</th><td id="detailCr">—</td></tr>
+                <tr><th>Final Property</th><td id="detailProperty">—</td><th>Target</th><td id="detailTarget">—</td></tr>
+              </tbody>
+            </table>
+            <div id="breakdown" class="breakdown"></div>
+          </section>
+        </div>
+      </section>
+
+      <aside class="rightSheet sheetPanel">
+        <h3>Settings</h3>
+        <label class="rightRow"><span>Level</span><select id="level"></select></label>
+        <label class="toggleRow"><span>Advantage</span><input id="advantage" type="checkbox" checked></label>
+        <label class="rightRow"><span>Chains</span><input id="chains" type="number" min="0" value="0"></label>
+        <label class="rightRow"><span>Chain Buff</span><span class="cellInput"><input id="chainBuff" type="number" step="0.1" value="0"><em>%</em></span></label>
+
+        <h3 class="enemyHead">Enemy</h3>
+        <label class="rightRow"><span>HP</span><input id="enemyHp" type="number" value="30000"></label>
+        <label class="rightRow"><span>M/ATK</span><input id="enemyAtk" type="number" value="1000"></label>
+        <label class="rightRow"><span>RES</span><span class="cellInput"><input id="enemyRes" type="number" step="0.1" value="0"><em>%</em></span></label>
+        <label class="rightRow"><span>DMG ×</span><input id="dmgMult" type="number" step="0.01" value="1"></label>
+        <div class="rightMetric"><span>Hits</span><b id="rightHits">1</b></div>
+        <div class="rightMetric"><span>DMG Dealt</span><b id="rightDamage">—</b></div>
+
+        <div class="rightActions">
+          <button id="resetBtnMirror" type="button">Reset Build</button>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="sheetFooter">
+      <span>Spreadsheet-inspired layout based on the original Brown Dust II calculator.</span>
+      <span>Changes deploy automatically from <code>main</code>.</span>
     </footer>
   </main>
   <script src="./app.js"></script>

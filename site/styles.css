@@ -190,7 +190,7 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   grid-template-columns:116px repeat(5,minmax(160px,1fr));
   min-width:916px;
 }
-.gearLabels,.gearCard{display:grid;grid-template-rows:25px 25px 25px repeat(5,25px) 25px}
+.gearLabels,.gearCard{display:grid;grid-template-rows:30px 25px 25px 25px repeat(5,25px) 25px}
 .gearLabels{
   background:var(--cell);
   border-right:1px solid var(--line);
@@ -225,6 +225,15 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   white-space:nowrap;
   font-weight:700;
 }
+.gearName select{
+  background:var(--mint);
+  color:#173c25;
+  border-radius:5px;
+  text-align:left;
+  padding:0 6px;
+  font-size:10px;
+}
+:root[data-theme="dark"] .gearName select{color:#eaf7ef}
 .gearTier select{background:var(--cyan);color:#164a5f}
 .gearTier:not(.exclusiveTier) select{background:var(--gold);color:#583c00}
 .refineGroup{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;width:100%}

@@ -28,24 +28,6 @@
       </div>
     </div>
 
-    <section class="buildRibbon sheetPanel">
-      <div class="buildRibbonTitle">
-        <span>BUILD</span>
-        <strong>Character & Costume</strong>
-      </div>
-      <label><span>Character</span><select id="buildCharacter" aria-label="Build character"></select></label>
-      <label class="costumeControl"><span>Costume</span><select id="costume" aria-label="Costume"></select></label>
-      <label><span>Upgrade</span><select id="dupe" aria-label="Costume upgrade">
-        <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
-        <option value="3">+3</option><option value="4">+4</option><option value="5" selected>+5</option>
-      </select></label>
-      <label><span>Burst</span><select id="burst" aria-label="Burst"><option value="0">None</option></select></label>
-      <div class="buildSource">
-        <span>Catalog</span>
-        <strong id="catalogCount">—</strong>
-      </div>
-    </section>
-
     <div class="calculatorGrid">
       <aside class="leftSheet sheetPanel">
         <div class="characterHeader">
@@ -53,6 +35,28 @@
           <select id="character" aria-label="Character"></select>
           <span id="rarityBadge" class="stars">★★★★★</span>
         </div>
+
+        <section class="leftBuildControls">
+          <label class="leftBuildWide">
+            <span>Costume / Calculation</span>
+            <select id="costume" aria-label="Costume"></select>
+          </label>
+          <label>
+            <span>Upgrade</span>
+            <select id="dupe" aria-label="Costume upgrade">
+              <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
+              <option value="3">+3</option><option value="4">+4</option><option value="5" selected>+5</option>
+            </select>
+          </label>
+          <label>
+            <span>Burst</span>
+            <select id="burst" aria-label="Burst"><option value="0">None</option></select>
+          </label>
+          <div class="leftCatalog">
+            <span>Catalog</span>
+            <strong id="catalogCount">—</strong>
+          </div>
+        </section>
 
         <section class="statTable">
           <div class="statRow"><span>♥</span><b>HP</b><strong id="sumHp">—</strong></div>

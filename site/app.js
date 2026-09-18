@@ -53,12 +53,12 @@ async function sbPaged(table,query){
   const rows=[];
   const size=1000;
   for(let start=0;;start+=size){
-    const res=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?"+query,{
+    const sep=query.includes("?")?"&":"&";
+    const url=SUPABASE_URL+"/rest/v1/"+table+"?"+query+sep+"limit="+size+"&offset="+start;
+    const res=await fetch(url,{
       headers:{
         apikey:SUPABASE_KEY,
-        Authorization:"Bearer "+SUPABASE_KEY,
-        Range:start+"-"+(start+size-1),
-        Prefer:"count=none"
+        Authorization:"Bearer "+SUPABASE_KEY
       }
     });
     if(!res.ok)throw new Error(table+" "+res.status);
@@ -66,7 +66,13 @@ async function sbPaged(table,query){
     rows.push.apply(rows,page);
     if(page.length<size)break;
   }
-  return rows;
+  const seen=new Set();
+  return rows.filter(function(row){
+    const key=row.variant_id||JSON.stringify(row);
+    if(seen.has(key))return false;
+    seen.add(key);
+    return true;
+  });
 }
 function toLegacyChar(r){
   return {
@@ -95,7 +101,7 @@ async function loadSupabase(){
     sb("engraving_steps","select=*&order=stat.asc,step.asc").catch(function(){return [];}),
     sb("awakening_values","select=*").catch(function(){return [];}),
     sb("potential_values","select=*").catch(function(){return [];}),
-    sbPaged("gear_catalog","select=variant_id,weapon_id,name_en,character_id,category,tier,slot,extra_ability,first_ability,second_ability&order=name_en.asc").catch(function(){return [];})
+    sbPaged("gear_catalog","select=variant_id,weapon_id,name_en,character_id,category,tier,slot,extra_ability,first_ability,second_ability&order=variant_id.asc").catch(function(err){console.error("gear_catalog load failed",err);return [];})
   ]);
   characters=critical[0].map(toLegacyChar);
   costumes=critical[1];
@@ -231,7 +237,7 @@ function setup(){
   render();
   const actualCostumeCount=costumes.filter(function(x){return !x.is_basic_attack;}).length;
   const gearCount=new Set(gearCatalog.map(function(x){return x.weapon_id;})).size;
-  $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+actualCostumeCount+" costumes + Basic Attack"+(gearCount?" · "+gearCount+" gears":"");
+  $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+actualCostumeCount+" costumes + Basic Attack"+(gearCount?" · "+gearCount+" gears":" · gear catalog unavailable");
   updateCatalogCount();
 }
 function fillProgressionSelects(){

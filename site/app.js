@@ -295,6 +295,7 @@ function setup(){
   wire();
   updateLevelOptions();
   updateCostumeOptions();
+  syncCostumeUpgradeToCalculator();
   render();
   const actualCostumeCount=costumes.filter(function(x){return !x.is_basic_attack;}).length;
   const gearCount=new Set(gearCatalog.map(function(x){return x.weapon_id;})).size;
@@ -505,11 +506,8 @@ function updateCostumeOptions(){
 function syncCalculationMode(){
   const basic=isBasicAttack();
   $("#dupe").disabled=basic;
-  if(basic){
-    $("#dupe").value="0";
-    $("#skillMult").value="100";
-    $("#hits").value="1";
-  }
+  if(basic)$("#dupe").value="0";
+  syncCostumeUpgradeToCalculator();
 }
 function updateBurstOptions(){
   const costume=getCostume(),el=$("#burst");
@@ -561,6 +559,7 @@ function wire(){
       return;
     }
     if(e.target.id==="costume"){syncCalculationMode();updateBurstOptions();render();return;}
+    if(e.target.id==="dupe"){syncCostumeUpgradeToCalculator();render();return;}
     render();
   }
   document.addEventListener("input",handleControlChange);
@@ -659,6 +658,110 @@ function compute(){
   return {c:c,t:t,gearOnly:gear.total,progression:prog,atkKey:atkKey,atk:atk,hp:hp,cr:cr,cdmg:cdmg,def:def,mres:mres,property:property,hits:hits,enemy:enemy,baseHit:baseHit,damage:damage,gear:gear};
 }
 function displayStat(k,v){return PERCENT_STATS.has(k)?pct(v):fmt(v);}
+
+function percentNumber(value){
+  const m=String(value==null?"":value).trim().match(/^(-?\d+(?:\.\d+)?)%$/);
+  return m?Number(m[1]):null;
+}
+function numericValue(value){
+  const n=Number(String(value==null?"":value).replace(/,/g,"").trim());
+  return Number.isFinite(n)?n:null;
+}
+function effectiveVariableValue(v,dupe){
+  const raw=currentDupeValue(v.dupe_values,dupe);
+  if(raw!=null){
+    // The imported SWITCH values are the dupe-only portion. When the original
+    // formula adds skill-potential bonuses (+IF(E...)), preserve the same
+    // potential delta that is present in the sheet's displayed +5 value.
+    if(/\+IF\(E/i.test(v.formula||"")){
+      const selectedPct=percentNumber(raw);
+      const base5Pct=percentNumber(currentDupeValue(v.dupe_values,5));
+      const shownPct=percentNumber(v.displayed_value);
+      if(selectedPct!=null&&base5Pct!=null&&shownPct!=null){
+        const value=selectedPct+(shownPct-base5Pct);
+        return (Math.round(value*10000)/10000)+"%";
+      }
+      const selectedNum=numericValue(raw);
+      const base5Num=numericValue(currentDupeValue(v.dupe_values,5));
+      const shownNum=numericValue(v.displayed_value);
+      if(selectedNum!=null&&base5Num!=null&&shownNum!=null){
+        return String(selectedNum+(shownNum-base5Num));
+      }
+    }
+    return String(raw);
+  }
+
+  // Covers simple upgrade conditions such as =IF($C$4 > 2, 10, 6).
+  const f=String(v.formula||"");
+  let m=f.match(/^=IF\(\$C\$4\s*>\s*(\d+)\s*,\s*([^,]+)\s*,\s*([^)]+)\)$/i);
+  if(m){
+    const chosen=dupe>Number(m[1])?m[2]:m[3];
+    return String(chosen).trim();
+  }
+  m=f.match(/^=IF\(\$C\$4\s*>=\s*(\d+)\s*,\s*([^,]+)\s*,\s*([^)]+)\)$/i);
+  if(m){
+    const chosen=dupe>=Number(m[1])?m[2]:m[3];
+    return String(chosen).trim();
+  }
+  return v.displayed_value==null?null:String(v.displayed_value);
+}
+function sheetColumnNumber(col){
+  let n=0;
+  String(col||"").toUpperCase().split("").forEach(function(ch){
+    n=n*26+(ch.charCodeAt(0)-64);
+  });
+  return n;
+}
+function primaryDamageVariable(vars){
+  const byIndex={};
+  vars.forEach(function(v){byIndex[Number(v.variable_index)]=v;});
+  const dmgRows=vars.filter(function(v){return /DMG\(/i.test(v.formula||"");});
+  for(const row of dmgRows){
+    const m=String(row.formula||"").match(/,\s*([A-Z]{1,2})\d+\s*\*\s*CRIT\s*\(/i);
+    if(!m)continue;
+    const idx=sheetColumnNumber(m[1])-13; // N = variable_index 1
+    const candidate=byIndex[idx];
+    if(candidate&&(candidate.dupe_values&&Object.keys(candidate.dupe_values).length||/\$C\$4/i.test(candidate.formula||""))){
+      return candidate;
+    }
+  }
+  return vars.find(function(v){
+    return v.dupe_values&&Object.keys(v.dupe_values).length&&percentNumber(currentDupeValue(v.dupe_values,5))!=null;
+  })||null;
+}
+function inferCostumeHits(costume){
+  const text=String(costume&&costume.skill_description||"");
+  const m=text.match(/Attack\s+(\d+)\s+Times/i)||text.match(/(\d+)\s+Times/i);
+  return m?Math.max(1,Number(m[1])||1):1;
+}
+function replaceUpgradeValuesInDescription(costume,vars,dupe){
+  let text=String(costume&&costume.skill_description||"");
+  vars.forEach(function(v){
+    const oldVal=String(v.displayed_value==null?"":v.displayed_value).trim();
+    const newVal=effectiveVariableValue(v,dupe);
+    if(!oldVal||newVal==null||String(newVal)===oldVal)return;
+    text=text.split(oldVal).join(String(newVal));
+  });
+  return text;
+}
+function syncCostumeUpgradeToCalculator(){
+  const costume=getCostume();
+  if(!costume||costume.is_basic_attack){
+    $("#skillMult").value="100";
+    $("#hits").value="1";
+    return;
+  }
+  const dupe=Number($("#dupe").value)||0;
+  const vars=costumeVariables.filter(function(v){return v.costume_id===costume.id;});
+  const primary=primaryDamageVariable(vars);
+  if(primary){
+    const value=effectiveVariableValue(primary,dupe);
+    const p=percentNumber(value);
+    if(p!=null)$("#skillMult").value=String(p);
+  }
+  $("#hits").value=String(inferCostumeHits(costume));
+}
+
 function currentDupeValue(obj,dupe){
   if(!obj||typeof obj!=="object")return null;
   return obj[String(dupe)]!=null?obj[String(dupe)]:obj[dupe]!=null?obj[dupe]:null;
@@ -677,13 +780,18 @@ function updateCostumePanel(r){
     $("#burstInfo").textContent="Basic Attack has no costume upgrade, potential, or Burst stage.";
     return;
   }
-  $("#skillTitle").textContent=costume.skill_name||costume.name;
-  $("#skillDescription").textContent=costume.skill_description||"No description available.";
+  $("#skillTitle").textContent=(costume.skill_name||costume.name)+" · +"+dupe;
+  const allVars=costumeVariables.filter(function(x){return x.costume_id===costume.id;});
+  $("#skillDescription").textContent=replaceUpgradeValuesInDescription(costume,allVars,dupe)||"No description available.";
   $("#targetBadge").textContent=costume.target||c.TARGET||"Target";
-  const vars=costumeVariables.filter(function(x){return x.costume_id===costume.id&&x.dupe_values&&Object.keys(x.dupe_values).length;});
+  const vars=allVars.filter(function(x){
+    return (x.dupe_values&&Object.keys(x.dupe_values).length)||/$C$4/i.test(x.formula||"");
+  });
+  const primary=primaryDamageVariable(allVars);
   $("#skillProgression").innerHTML=vars.slice(0,8).map(function(v,i){
-    const val=currentDupeValue(v.dupe_values,dupe)||v.displayed_value||"—";
-    return '<span class="skillVarChip"><span>Effect '+(i+1)+'</span><b>'+val+"</b></span>";
+    const val=effectiveVariableValue(v,dupe)||v.displayed_value||"—";
+    const label=primary&&Number(primary.variable_index)===Number(v.variable_index)?"Damage":"Effect "+(i+1);
+    return '<span class="skillVarChip"><span>'+label+'</span><b>'+val+"</b></span>";
   }).join("");
   const burstStage=Number($("#burst").value)||0;
   const burst=costumeBursts.find(function(x){return x.costume_id===costume.id&&Number(x.stage)===burstStage;});

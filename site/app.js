@@ -1,6 +1,7 @@
 const SUPABASE_URL = "https://zhjasralevblmvqthqln.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoamFzcmFsZXZibG12cXRocWxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3NDM1MjQsImV4cCI6MjEwNTMxOTUyNH0.OcrncbhHVr1VLxrh5Y4wh1PhsfATdMWzyG9KCbutrwc";
 const SHEET_ID = "1aNXv7zzY3G4YqqRhInpfIN9ei4skCf2iGYCG9oYyQ1o";
+const CHARACTER_FALLBACK_CACHE = {"Kry":[4,"Dark","Property",28,252,0,0,126,2142,0.1,0.5,0,0,"Very Front","Weapon","Crying Devil","CR",0.0479,0.0839,0.1199,null,null,null,null,null],"Rou":[5,"Dark","Property",28,308,0,0,126,2646,0.1,0.5,0,0,"Very Front","Weapon","Dark Restraint","CR",null,0.1049,0.1499,"HP","CDMG","DEF","CDMG","CR"],"Tyr":[5,"Wind","Water",36,396,0,0,75,1575,0.1,0.5,0,0,"Very Front","Weapon","Brionac","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Alec":[5,"Fire","Wind",38,418,0,0,74,1554,0,0,0,0,"Very Front","Weapon","Predator","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Emma":[3,"Light","Property",35,245,0,0,92,1196,0,0,0,0,"Very Front","Accessory","Scholar's Emblem","CR",0.036,0.063,0.09,null,null,null,null,null],"Eris":[5,"Fire","Wind",34,374,0,0,88,1848,0.1,0.5,0,0,"Very Front","Weapon","Eris' Sword","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Fred":[3,"Wind","Water",12,84,0,0,215,2795,0.1,0.5,0.1,0,"Very Front","Body","Lugo Shirt","HP%",0.108,0.189,0.324,null,null,null,null,null],"Gray":[5,"Wind","Water",30,330,0,0,104,2184,0.2,0.5,0,0,"Vault","Weapon","Diathema","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Gynt":[3,"Wind","Water",30,210,0,0,104,1352,0.2,0.5,0,0,"Vault","Gloves","Handmade","ATK%",0.108,0.189,0.27,null,null,null,null,null],"Loen":[5,"Fire","Wind",0,0,29,319,120,2520,0.05,1,0,0,"Vault","Weapon","Lost Magic","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Roxy":[5,"Water","Fire",0,0,37,407,69,1449,0.05,1,0,0,"Vault","Weapon","Roxy's Staff","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Seir":[5,"Dark","Property",0,0,15,165,208,4368,0.1,0.5,0,0,"Very Front","Accessory","Arch Demons","HP%",null,0.315,0.54,"HP","MATK","MRES","MRES","HP%"],"Yomi":[5,"Wind","Water",31,341,0,0,107,2247,0.1,0.5,0,0,"Very Front","Weapon","Roaring Sword Ragnarok","ATK",null,47,67,"HP","ATK","DEF","ATK%","ELE%"],"Yumi":[5,"Water","Fire",0,0,30,330,96,2016,0.1,1,0,0.15,"Very Front","Weapon","Kurokage's Fan","MATK",null,47,67,"HP","MATK","MRES","MATK%","ELE%"],"Yuri":[5,"Light","Property",33,363,0,0,95,1995,0.1,0.5,0,0,"Very Front","Weapon","Black Snow Tiger Sword","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Blade":[5,"Dark","Property",39,429,0,0,50,1050,0.1,0.75,0,0,"Very Front","Weapon","Blade","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Celia":[5,"Dark","Property",0,0,25,275,122,2562,0.2,0.5,0,0.2,"Vault","Accessory","Terra Concealer","MATK",null,47,67,"HP","MATK","MRES","MATK%","ELE%"],"Dalvi":[5,"Wind","Water",0,0,32,352,96,2016,0.1,0.75,0,0,"Vault","Head","Thousand-Year-Long Hairpin","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Diana":[5,"Wind","Water",0,0,16,176,191,4011,0.1,0.5,0,0.1,"Vault","Head","White Pixie","HP%",null,0.315,0.54,"HP","MATK","MRES","MRES","HP%"],"Elise":[5,"Fire","Wind",25,275,0,0,137,2877,0.1,0.5,0,0.1,"Vault","Body","Rose Selection","ATK",null,47,67,"HP","ATK","DEF","ATK%","ELE%"],"Elpis":[4,"Dark","Property",0,0,25,225,145,2465,0.1,0.5,0,0,"Vault","Accessory","Akrasion","HP%",0.108,0.189,0.324,null,null,null,null,null],"Julie":[3,"Wind","Water",0,0,32,224,93,1209,0.1,0.5,0,0.15,"Very Front","Head","Spirit Ribbon","MATK",16,27,40,null,null,null,null,null],"Layla":[4,"Light","Property",32,288,0,0,101,1717,0.1,0.5,0,0,"Very Front","Weapon","Pigsmith","ATK%",0.144,0.252,0.36,null,null,null,null,null],"Levia":[5,"Fire","Wind",0,0,36,396,70,1470,0.1,0.75,0,0,"Vault","Weapon","Tome of Liberation","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Lydia":[3,"Water","Fire",24,168,0,0,151,1963,0.1,0.5,0,0,"Very Front","Weapon","Simple Spear","ATK%",0.108,0.189,0.27,null,null,null,null,null],"Maria":[3,"Dark","Property",0,0,32,224,91,1183,0.1,0.75,0,0.1,"Very Front","Weapon","Ruiner","MATK%",0.108,0.189,0.27,null,null,null,null,null],"Rubia":[5,"Fire","Wind",32,352,0,0,91,1911,0.2,0.5,0,0,"Very Front","Weapon","Carneliana","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Samay":[4,"Dark","Property",0,0,28,252,126,2142,0.1,0.5,0,0,"Very Front","Gloves","Seventh Hell","MATK",22,38,54,null,null,null,null,null],"Sonya":[5,"Dark","Property",0,0,37,407,69,1449,0.1,0.5,0,0,"Vault","Accessory","Ater Hecate","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Andrew":[4,"Fire","Wind",22,198,0,0,164,2788,0.1,0.5,0,0,"Very Front","Body","Demon's Suit","HP%",0.144,0.252,0.432,null,null,null,null,null],"Arines":[3,"Light","Property",0,0,28,196,116,1508,0.1,0.5,0,0.15,"Vault","Head","Holy Gaze","HP",97,169,292,null,null,null,null,null],"Bernie":[4,"Wind","Water",30,270,0,0,104,1768,0.2,0.5,0,0,"Very Front","Gloves","Stealer Hand","ATK%",0.144,0.252,0.36,null,null,null,null,null],"Darian":[5,"Water","Fire",35,385,0,0,81,1701,0.05,1,0,0,"Vault","Weapon","Revelatio","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Glacia":[5,"Water","Fire",0,0,10,110,213,4473,0.1,0.5,0,0.2,"Very Front","Weapon","Frost Queen","MRES",null,0.0945,0.162,"HP","MATK","MRES","MRES","HP%"],"Helena":[5,"Light","Property",0,0,32,352,96,2016,0.1,0.5,0,0.1,"Very Front","Head","Top Idol","MATK",null,47,67,"HP","MATK","MRES","MRES","HP%"],"Hikage":[5,"Wind","Water",32,352,0,0,91,1911,0.1,1,0,0,"Very Front","Weapon","Hinata's Knife","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Ingrid":[3,"Water","Fire",28,196,0,0,124,1612,0.25,0.25,0,0,"Very Front","Weapon","Double Trouble","ATK",16,27,40,null,null,null,null,null],"Jayden":[4,"Light","Property",0,0,20,180,182,3094,0,0,0,0,"Vault","Accessory","J Collection","MATK",22,38,54,null,null,null,null,null],"Justia":[5,"Light","Property",32,352,0,0,101,2121,0.1,0.5,0,0,"Very Front","Weapon","Royaldite","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Lathel":[5,"Fire","Wind",25,275,0,0,137,2877,0.1,0.5,0.1,0,"Very Front","Body","Artha Lugo","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Nartas":[5,"Dark","Property",0,0,36,396,70,1470,0.1,0.75,0,0,"Very Front","Gloves","Seal of Hell","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Nebris":[5,"Wind","Water",36,396,0,0,70,1470,0.1,0.75,0,0,"Very Front","Weapon","Black Moon","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Rafina":[5,"Water","Fire",20,220,0,0,167,3507,0.1,0.5,0.1,0,"Vault","Gloves","E.P.G.","ATK",null,47,67,"HP","ATK","DEF","ATK%","ELE%"],"Sylvia":[5,"Water","Fire",32,352,0,0,91,1911,0.2,0.5,0,0,"Very Front","Weapon","Primulan","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Venaka":[5,"Wind","Water",0,0,33,363,85,1785,0.1,0.75,0,0.1,"Very Front","Weapon","Sing in Harmony","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Wiggle":[3,"Fire","Wind",47,329,0,0,6,78,0.1,0.5,0,0,"Very Front","Weapon","Dangerous Bomb","ATK%",0.108,0.189,0.27,null,null,null,null,null],"Zenith":[5,"Wind","Water",18,198,0,0,179,3759,0.1,0.5,0.1,0,"Vault","Weapon","Rabbit Ranger","HP%",null,0.315,0.54,"HP","ATK","DEF","DEF","HP%"],"Carlson":[3,"Water","Fire",10,70,0,0,220,2860,0.1,0.5,0.15,0,"Very Front","Body","Evoren Guard","HP%",0.108,0.189,0.324,null,null,null,null,null],"Cynthia":[3,"Water","Fire",0,0,30,210,104,1352,0.1,0.5,0,0,"Very Front","Accessory","Frozen Ruby","MATK%",0.108,0.189,0.27,null,null,null,null,null],"Eclipse":[5,"Dark","Property",0,0,28,308,119,2499,0.1,0.5,0,0.1,"Vault","Accessory","Star Caller Ornament","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Lecliss":[5,"Wind","Water",12,132,0,0,215,4515,0.1,0.5,0.1,0,"Very Front","Head","Soul Cortana","HP%",null,0.315,0.54,"HP","ATK","DEF","DEF","HP%"],"Liatris":[5,"Fire","Wind",32,352,0,0,96,2016,0.1,0.75,0,0,"Vault","Weapon","Lunar Piercer","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Liberta":[5,"Fire","Wind",17,187,0,0,185,3885,0.1,0.5,0.1,0,"Very Front","Accessory","Dark Rosarium","HP%",null,0.315,0.54,"HP","ATK","DEF","DEF","HP%"],"Morpeah":[5,"Water","Fire",0,0,27,297,132,2772,0.1,0.5,0,0,"Vault","Accessory","La Hypnos","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Olivier":[5,"Light","Property",0,0,31,341,97,2037,0.1,1,0,0,"Very Front","Weapon","Tyrfing I","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Olstein":[5,"Wind","Water",0,0,24,264,143,3003,0.1,0.5,0,0.1,"Vault","Head","Verum Lux","HP%",null,0.315,0.54,"HP","MATK","MRES","MRES","HP%"],"Remnunt":[3,"Water","Fire",26,182,0,0,131,1703,0.2,0.5,0,0,"Vault","Weapon","Arbalest","ATK%",0.108,0.189,0.27,null,null,null,null,null],"Teresse":[5,"Water","Fire",12,132,0,0,215,4515,0.1,0.5,0.1,0,"Very Front","Weapon","Gravior","HP%",null,0.315,0.54,"HP","ATK","DEF","DEF","HP%"],"Ventana":[5,"Light","Property",35,385,0,0,71,1491,0.2,0.5,0,0,"Very Front","Weapon","Purple Moon","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Angelica":[5,"Light","Property",0,0,22,242,157,3297,0.1,1,0,0,"Very Front","Weapon","Evil Sword Jormun","CDMG",null,0.63,0.9,"HP","CDMG","DEF","CDMG","CR"],"Beatrice":[3,"Fire","Wind",28,196,0,0,134,1742,0,0,0,0,"Very Front","Weapon","Earth Shaker","ATK%",0.108,0.189,0.27,null,null,null,null,null],"Eleaneer":[5,"Dark","Property",32,352,0,0,91,1911,0.2,0.5,0,0,"Very Front","Weapon","Freischutz","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"Lisianne":[4,"Wind","Water",0,0,26,234,123,2091,0.1,0.5,0,0.2,"Vault","Accessory","Amitie","MATK",22,38,54,null,null,null,null,null],"Lucrezia":[4,"Dark","Property",0,0,34,306,84,1428,0.1,0.5,0,0.1,"Very Front","Accessory","Winged Skull","MATK%",0.144,0.252,0.36,null,null,null,null,null],"Luvencia":[5,"Dark","Property",29,319,0,0,111,2331,0.1,1,0,0,"Very Front","Weapon","Superbia","ATK",null,47,67,"HP","ATK","DEF","ATK%","ELE%"],"Michaela":[5,"Light","Property",0,0,30,330,93,1953,0.15,1,0,0.05,"Vault","Weapon","Prelude","MATK",null,47,67,"HP","MATK","MRES","MATK%","ELE%"],"Refithea":[5,"Light","Property",0,0,17,187,185,3885,0.1,0.5,0,0.1,"Vault","Body","Little Fairy","MRES",null,0.0945,0.162,"HP","MATK","MRES","MRES","HP%"],"Yozakura":[5,"Wind","Water",0,0,34,374,88,1848,0.05,0.5,0.1,0,"Very Front","Weapon","Expandable Pile Bunker Gauntlets","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Anastasia":[5,"Fire","Wind",34,374,0,0,88,1848,0.1,0.5,0,0,"Very Front","Weapon","M.A.I.D. C","CDMG",null,0.63,0.9,"HP","CDMG","DEF","CDMG","CR"],"Granhildr":[5,"Light","Property",12,132,0,0,227,4767,0.1,0.5,0,0,"Very Front","Weapon","Freinir","HP%",null,0.315,0.54,"HP","ATK","DEF","DEF","HP%"],"Priestess":[5,"Light","Property",0,0,31,341,75,1575,0.2,1,0,0.1,"Vault","Weapon","Staff","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Rigenette":[3,"Wind","Water",25,175,0,0,137,1781,0.2,0.5,0,0,"Vault","Weapon","Hunter's Bow","ATK",16,27,40,null,null,null,null,null],"Wilhelmina":[5,"Water","Fire",29,319,0,0,111,2331,0.1,1,0,0,"Very Front","Weapon","Fleur Stinger","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Scheherazade":[5,"Water","Fire",0,0,35,385,78,1638,0.1,0.5,0,0.1,"Very Front","Weapon","Plentithoum","MATK%",null,0.315,0.45,"HP","MATK","MRES","MATK%","ELE%"],"Sword Maiden":[5,"Light","Property",0,0,34,374,83,1743,0.1,0.5,0,0.1,"Vault","Weapon","Sword-and-Scales Staff","MATK",null,47,67,"HP","MATK","MRES","MATK%","ELE%"],"Goblin Slayer":[5,"Fire","Wind",26,286,0,0,131,2751,0.1,0.5,0.1,0,"Very Front","Weapon","Short Sword","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"],"High Elf Archer":[5,"Wind","Water",34,374,0,0,98,2058,0,1,0,0,"Vault","Weapon","Yew Wood Bow","CDMG",null,0.63,0.9,"HP","ATK","DEF","ATK%","ELE%"],"Justia (Sacred)":[5,"Light","Property",32,352,0,0,101,2121,0.1,0.5,0,0,"Very Front","Weapon","Mistilsteinn","ATK%",null,0.315,0.45,"HP","ATK","DEF","ATK%","ELE%"]};
 
 const STAT_NAMES = ["ATK","MATK","ATK%","MATK%","HP","HP%","CR","CDMG","DEF","MRES"];
 const ALL_STATS = STAT_NAMES.concat(["ELE%"]);
@@ -155,6 +156,41 @@ function parseBase(rows){
     const o={};h.forEach(function(k,i){o[k]=r[i];});o.__id=slug(o.Name);return o;
   });
 }
+
+function patchCharactersFromCache(){
+  characters=characters.map(function(c){
+    const a=CHARACTER_FALLBACK_CACHE[c.Name];
+    if(!a)return c;
+    c.RARITY=Number(a[0])||c.RARITY;
+    c.ELE=a[1]||c.ELE;
+    c.RES=a[2]||c.RES;
+    c.ATK0=Number(a[3])||0;
+    c.ATK=Number(a[4])||0;
+    c.MATK0=Number(a[5])||0;
+    c.MATK=Number(a[6])||0;
+    c.HP0=Number(a[7])||0;
+    c.HP=Number(a[8])||0;
+    c.CR=Number(a[9])||0;
+    c.CDMG=Number(a[10])||0;
+    c.DEF=Number(a[11])||0;
+    c.MRES=Number(a[12])||0;
+    c.TARGET=a[13]||c.TARGET;
+    c.EXSLOT=a[14]||null;
+    c.EXNAME=a[15]||null;
+    c.EXSTAT=a[16]||null;
+    c["EX R"]=a[17];
+    c["EX SR"]=a[18];
+    c["EX UR"]=a[19];
+    c.ENG_LIFE=a[20]||null;
+    c.ENG_STR=a[21]||null;
+    c.ENG_PSV=a[22]||null;
+    c.AWA1=a[23]||null;
+    c.AWA2=a[24]||null;
+    c.__id=c.__id||slug(c.Name);
+    return c;
+  });
+}
+
 function parseGear(rows){
   let section=null,header=null;
   rows.forEach(function(r){
@@ -178,6 +214,7 @@ async function loadSheetFallback(){
     gvizRaw("Skills").catch(function(){return [];})
   ]);
   characters=parseBase(data[0]);
+  patchCharactersFromCache();
   parseGear(data[1]);
 
   // Keep the calculator usable even if Supabase cannot be reached from the browser.
@@ -217,7 +254,18 @@ async function loadData(){
   catch(err){
     try{await loadSheetFallback();}
     catch(err2){
-      characters=[{__id:"tyr",Name:"Tyr",RARITY:5,ELE:"Wind",RES:"Water",ATK0:36,ATK:396,MATK0:0,MATK:0,HP0:75,HP:1575,CR:.1,CDMG:.5,DEF:0,MRES:0,TARGET:"Very Front",EXSLOT:"Weapon",EXNAME:"Brionac",EXSTAT:"CDMG","EX R":null,"EX SR":.63,"EX UR":.9,ENG_LIFE:"HP",ENG_STR:"ATK",ENG_PSV:"DEF",AWA1:"ATK%",AWA2:"ELE%"}];
+      characters=Object.keys(CHARACTER_FALLBACK_CACHE).map(function(name){
+        const a=CHARACTER_FALLBACK_CACHE[name];
+        return {
+          __id:slug(name),Name:name,RARITY:Number(a[0])||5,ELE:a[1],RES:a[2],
+          ATK0:Number(a[3])||0,ATK:Number(a[4])||0,MATK0:Number(a[5])||0,MATK:Number(a[6])||0,
+          HP0:Number(a[7])||0,HP:Number(a[8])||0,CR:Number(a[9])||0,CDMG:Number(a[10])||0,
+          DEF:Number(a[11])||0,MRES:Number(a[12])||0,TARGET:a[13],
+          EXSLOT:a[14],EXNAME:a[15],EXSTAT:a[16],"EX R":a[17],"EX SR":a[18],"EX UR":a[19],
+          ENG_LIFE:a[20],ENG_STR:a[21],ENG_PSV:a[22],AWA1:a[23],AWA2:a[24]
+        };
+      });
+      gearTables={main:{},sub:{},refine:{}};
       catalogSource="Emergency fallback";
     }
   }

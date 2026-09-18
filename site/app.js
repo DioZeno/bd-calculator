@@ -37,6 +37,7 @@ let costumeBursts=[];
 let engravingSteps={};
 let awakeningValues={};
 let potentialValues={};
+let gearCatalog=[];
 let gearTables={main:{},sub:{},refine:{}};
 let gearState=clone(DEFAULT_GEAR);
 let catalogSource="";
@@ -47,6 +48,25 @@ async function sb(table,query){
   });
   if(!res.ok)throw new Error(table+" "+res.status);
   return res.json();
+}
+async function sbPaged(table,query){
+  const rows=[];
+  const size=1000;
+  for(let start=0;;start+=size){
+    const res=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?"+query,{
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:"Bearer "+SUPABASE_KEY,
+        Range:start+"-"+(start+size-1),
+        Prefer:"count=none"
+      }
+    });
+    if(!res.ok)throw new Error(table+" "+res.status);
+    const page=await res.json();
+    rows.push.apply(rows,page);
+    if(page.length<size)break;
+  }
+  return rows;
 }
 function toLegacyChar(r){
   return {
@@ -74,7 +94,8 @@ async function loadSupabase(){
     sb("costume_bursts","select=*&order=costume_id.asc,stage.asc").catch(function(){return [];}),
     sb("engraving_steps","select=*&order=stat.asc,step.asc").catch(function(){return [];}),
     sb("awakening_values","select=*").catch(function(){return [];}),
-    sb("potential_values","select=*").catch(function(){return [];})
+    sb("potential_values","select=*").catch(function(){return [];}),
+    sbPaged("gear_catalog","select=variant_id,weapon_id,name_en,character_id,category,tier,slot,extra_ability,first_ability,second_ability&order=name_en.asc").catch(function(){return [];})
   ]);
   characters=critical[0].map(toLegacyChar);
   costumes=critical[1];
@@ -97,6 +118,7 @@ async function loadSupabase(){
   optional[5].forEach(function(r){
     potentialValues[[r.rarity,r.kind,r.stat].join("|")]=Number(r.value)||0;
   });
+  gearCatalog=optional[6]||[];
   if(!characters.length||!costumes.length||!Object.keys(gearTables.main).length){
     throw new Error("Supabase critical catalog empty");
   }
@@ -181,7 +203,7 @@ async function loadSheetFallback(){
       source:"google_sheet_fallback"
     });
   });
-  costumeVariables=[];costumePotentials=[];costumeBursts=[];
+  costumeVariables=[];costumePotentials=[];costumeBursts=[];gearCatalog=[];
   catalogSource=costumes.length?"Google Sheet fallback · costume catalog loaded":"Google Sheet fallback";
 }
 async function loadData(){
@@ -208,7 +230,8 @@ function setup(){
   updateCostumeOptions();
   render();
   const actualCostumeCount=costumes.filter(function(x){return !x.is_basic_attack;}).length;
-  $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+actualCostumeCount+" costumes + Basic Attack";
+  const gearCount=new Set(gearCatalog.map(function(x){return x.weapon_id;})).size;
+  $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+actualCostumeCount+" costumes + Basic Attack"+(gearCount?" · "+gearCount+" gears":"");
   updateCatalogCount();
 }
 function fillProgressionSelects(){
@@ -237,9 +260,63 @@ function updateCatalogCount(){
 function tierOptions(){return Object.keys(gearTables.main).filter(function(x){return x&&x!=="NULL";}).map(function(x){return "<option>"+x+"</option>";}).join("");}
 function selectOptions(items,current){return items.map(function(x){return "<option "+(x===current?"selected":"")+">"+x+"</option>";}).join("");}
 
+function normalizeGearStat(stat){
+  return stat==="MDEF"?"MRES":stat;
+}
+function abilityTokens(text){
+  const out=[];
+  const re=/\{([^}]+)\}/g;
+  let m;
+  while((m=re.exec(String(text||"")))){
+    const stat=normalizeGearStat(m[1]);
+    if(ALL_STATS.includes(stat)&&!out.includes(stat))out.push(stat);
+  }
+  return out;
+}
+function compactName(v){return slug(v).replace(/-/g,"");}
+function catalogMatchesCharacter(row,c){
+  if(row.category!=="Exclusive")return true;
+  const owner=compactName(row.character_id||"");
+  if(owner&&owner===compactName(c.__id))return true;
+  if(owner&&owner===compactName(c.Name))return true;
+  if(row.name_en&&c.EXNAME&&compactName(row.name_en)===compactName(c.EXNAME))return true;
+  return false;
+}
+function catalogRowsForSlot(slot){
+  const c=getChar();
+  const rows=gearCatalog.filter(function(r){
+    return r.slot===slot && !!gearTables.main[r.tier] && catalogMatchesCharacter(r,c);
+  });
+  const priority={Exclusive:0,Monster:1,UR:2,SR:3,R:4,N:5};
+  rows.sort(function(a,b){
+    const pa=priority[a.category]??9,pb=priority[b.category]??9;
+    if(pa!==pb)return pa-pb;
+    if(a.name_en!==b.name_en)return String(a.name_en||"").localeCompare(String(b.name_en||""));
+    return String(b.tier).localeCompare(String(a.tier));
+  });
+  return rows;
+}
+function gearCatalogOptions(slot,current){
+  const rows=catalogRowsForSlot(slot);
+  return '<option value="">Manual / Custom</option>'+rows.map(function(r){
+    const label=(r.name_en||r.weapon_id)+" · "+r.tier+(r.category==="Exclusive"?" · EX":r.category==="Monster"?" · Fiend":"");
+    return '<option value="'+r.variant_id+'" '+(current===r.variant_id?"selected":"")+'>'+label+"</option>";
+  }).join("");
+}
+function getCatalogGear(id){return gearCatalog.find(function(r){return r.variant_id===id;})||null;}
+function applyCatalogGear(slot,id){
+  const g=gearState[slot];
+  g.catalogId=id||"";
+  const item=getCatalogGear(id);
+  if(!item)return;
+  g.tier=item.tier;
+  const a=abilityTokens(item.first_ability),b=abilityTokens(item.second_ability);
+  if(a.length)g.main1=a[0];
+  if(b.length)g.main2=b[0];
+}
 function buildGearUI(){
   const grid=$("#gearGrid");
-  grid.innerHTML='<div class="gearLabels"><div>Tier</div><div>Refinement</div><div>Exclusive</div><div>Basic 1</div><div>Basic 2</div><div>Substat 1</div><div>Substat 2</div><div>Substat 3</div><div>Gear Slot</div></div>';
+  grid.innerHTML='<div class="gearLabels"><div>Gear</div><div>Tier</div><div>Refinement</div><div>Exclusive</div><div>Basic 1</div><div>Basic 2</div><div>Substat 1</div><div>Substat 2</div><div>Substat 3</div><div>Gear Slot</div></div>';
   Object.keys(DEFAULT_GEAR).forEach(function(slot){
     const g=gearState[slot],col=document.createElement("article");
     col.className="gearCard";col.dataset.slot=slot;
@@ -250,6 +327,7 @@ function buildGearUI(){
       subs+='<div class="gearCell gearStatCell gearSub"><select data-sub="'+i+'">'+selectOptions(SUB_OPTIONS,g.subs[i])+'</select><b class="gearStatValue" data-value="sub'+i+'">—</b></div>';
     });
     col.innerHTML=
+      '<div class="gearCell gearName"><select data-gear aria-label="'+slot+' gear">'+gearCatalogOptions(slot,g.catalogId||"")+"</select></div>"+
       '<div class="gearCell gearTier"><select data-k="tier">'+tierOptions()+"</select></div>"+
       '<div class="gearCell"><div class="refineGroup">'+refs+"</div></div>"+
       '<div class="gearCell"><div class="exclusiveValue"><span>-</span><b>-</b></div></div>'+
@@ -266,16 +344,28 @@ function buildGearUI(){
 function refreshMainOptions(){
   const c=getChar(),type=attackType(c);
   document.querySelectorAll(".gearCard").forEach(function(card){
-    const slot=card.dataset.slot,g=gearState[slot],opts=SLOT_OPTIONS[slot][type];
+    const slot=card.dataset.slot,g=gearState[slot],item=getCatalogGear(g.catalogId);
+    const manual=SLOT_OPTIONS[slot][type];
+    const optionMap={
+      main1:item?abilityTokens(item.first_ability):manual,
+      main2:item?abilityTokens(item.second_ability):manual
+    };
     ["main1","main2"].forEach(function(k){
       const el=card.querySelector('[data-k="'+k+'"]');
+      let opts=optionMap[k];
+      if(!opts.length)opts=manual;
       let desired=g[k];
-      if(!opts.includes(desired)){
+      if(!opts.includes(desired)&&!item){
         desired=type==="magic"?desired.replace("ATK","MATK"):desired.replace("MATK","ATK");
       }
       if(!opts.includes(desired))desired=opts[0];
       g[k]=desired;el.innerHTML=selectOptions(opts,desired);
     });
+    const gearSelect=card.querySelector("[data-gear]");
+    if(gearSelect){
+      gearSelect.innerHTML=gearCatalogOptions(slot,g.catalogId||"");
+      gearSelect.value=g.catalogId||"";
+    }
   });
 }
 function updateLevelOptions(){
@@ -327,14 +417,22 @@ function wire(){
   function handleControlChange(e){
     const card=e.target.closest(".gearCard");
     if(card){
-      const s=card.dataset.slot,g=gearState[s];
-      if(e.target.dataset.k)g[e.target.dataset.k]=e.target.value;
+      const slot=card.dataset.slot,g=gearState[slot];
+      if(e.target.dataset.gear!==undefined){
+        applyCatalogGear(slot,e.target.value);
+        buildGearUI();render();return;
+      }
+      if(e.target.dataset.k){
+        g[e.target.dataset.k]=e.target.value;
+        if(e.target.dataset.k==="tier")g.catalogId="";
+        refreshMainOptions();
+      }
       if(e.target.dataset.sub!=null)g.subs[+e.target.dataset.sub]=e.target.value;
       if(e.target.dataset.ref!=null)g.ref[+e.target.dataset.ref]=e.target.value;
       render();return;
     }
     if(e.target.id==="character"){
-      updateLevelOptions();refreshMainOptions();updateCostumeOptions();render();return;
+      updateLevelOptions();refreshMainOptions();updateCostumeOptions();buildGearUI();render();return;
     }
     if(e.target.id==="costume"){syncCalculationMode();updateBurstOptions();render();return;}
     render();
@@ -348,8 +446,10 @@ function wire(){
 }
 
 function addStat(obj,k,v){if(k)obj[k]=(obj[k]||0)+(Number(v)||0);}
-function exValueFor(c,tier,slot){
+function exValueFor(c,tier,slot,g){
   if(!String(tier).startsWith("EX")||c.EXSLOT!==slot||!c.EXSTAT)return null;
+  const named=g&&g.catalogId?getCatalogGear(g.catalogId):null;
+  if(named&&named.category==="Exclusive"&&!catalogMatchesCharacter(named,c))return null;
   const key=tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":"EX R",raw=c[key];
   if(raw==="-"||raw===""||raw==null)return null;
   return {stat:c.EXSTAT,value:Number(raw)||0};
@@ -367,7 +467,7 @@ function gearStats(c){
     const g=gearState[slot],piece={};
     [g.main1,g.main2].forEach(function(stat){const v=mainGearValue(g,stat);addStat(total,stat,v);addStat(piece,stat,v);});
     g.subs.forEach(function(stat){const v=subGearValue(g,stat);addStat(total,stat,v);addStat(piece,stat,v);});
-    const ex=exValueFor(c,g.tier,slot);if(ex){addStat(total,ex.stat,ex.value);addStat(piece,ex.stat,ex.value);}
+    const ex=exValueFor(c,g.tier,slot,g);if(ex){addStat(total,ex.stat,ex.value);addStat(piece,ex.stat,ex.value);}
     previews[slot]=piece;
   });
   return {total:total,previews:previews};
@@ -481,8 +581,10 @@ function render(){
   $("#gearAtkPctLabel").textContent=atkPct;$("#gearAtkPct").textContent=pct(r.t[atkPct]||0);$("#gearCdmg").textContent=pct(r.t.CDMG||0);$("#detailHpPct").textContent=pct(r.t["HP%"]||0);$("#detailCr").textContent=pct(r.t.CR||0);$("#detailProperty").textContent=pct(r.property);
 
   document.querySelectorAll(".gearCard").forEach(function(card){
-    const slot=card.dataset.slot,g=gearState[slot],ex=exValueFor(c,g.tier,slot);
-    card.querySelector(".gearTier").classList.toggle("exclusiveTier",!!ex);card.querySelector(".exMark").textContent=ex?"EX":"";
+    const slot=card.dataset.slot,g=gearState[slot],ex=exValueFor(c,g.tier,slot,g);
+    card.querySelector(".gearTier").classList.toggle("exclusiveTier",!!ex);
+    const named=getCatalogGear(g.catalogId);
+    card.querySelector(".exMark").textContent=ex?"EX":named?(named.category==="Monster"?"FIEND":""):"";
     card.querySelector(".exclusiveValue").innerHTML=ex?("<span>"+ex.stat+"</span><b>"+displayStat(ex.stat,ex.value)+"</b>"):"<span>-</span><b>-</b>";
     const a=card.querySelector('[data-value="main1"]'),b=card.querySelector('[data-value="main2"]');
     if(a)a.textContent=displayStat(g.main1,mainGearValue(g,g.main1));if(b)b.textContent=displayStat(g.main2,mainGearValue(g,g.main2));

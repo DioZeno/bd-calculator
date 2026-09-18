@@ -82,13 +82,53 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .themeDock button{font-size:10px;padding:3px 7px;color:#ddd}
 .themeDock button.active{background:#fff;color:#111;border-color:#fff}
 
+
+.buildRibbon{
+  display:grid;
+  grid-template-columns:150px 180px minmax(260px,1fr) 92px 110px 110px;
+  gap:8px;
+  align-items:end;
+  margin:8px 0 10px;
+  padding:9px 10px;
+  border-color:var(--line-strong);
+}
+.buildRibbonTitle{align-self:center;display:flex;flex-direction:column;gap:2px}
+.buildRibbonTitle span{font-size:9px;letter-spacing:.16em;color:var(--muted);font-weight:800}
+.buildRibbonTitle strong{font-size:13px}
+.buildRibbon label{display:grid;gap:4px}
+.buildRibbon label>span,.buildSource span{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.buildRibbon select{
+  height:28px;border:1px solid var(--line);background:var(--cell);border-radius:5px;padding:0 8px;font-weight:700;font-size:12px;min-width:0
+}
+.costumeControl select{width:100%}
+.buildSource{display:grid;gap:4px;align-content:end}
+.buildSource strong{height:28px;display:flex;align-items:center;justify-content:center;background:var(--cell-alt);border:1px solid var(--line);border-radius:5px;font-size:11px}
+
+.skillProgression{display:flex;flex-wrap:wrap;gap:4px;padding:0 7px 8px}
+.skillVarChip{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);background:var(--cell-alt);border-radius:10px;padding:2px 6px;font-size:9px}
+.skillVarChip b{font-size:10px}
+.progressionBox{border-top:1px solid var(--line-strong);padding:8px}
+.progressionHead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px}
+.progressionHead strong{font-size:11px}
+.progressionHead small{font-size:8px;color:var(--muted)}
+.progressionGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.progressionGrid label{display:grid;gap:3px}
+.progressionGrid label>span{font-size:8px;color:var(--muted);text-transform:uppercase;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progressionGrid select{height:24px;border:1px solid var(--line);background:var(--cell);border-radius:4px;text-align:center;font-size:10px}
+.awakeningToggle{display:flex!important;flex-direction:column;align-items:center;justify-content:flex-end}
+.awakeningToggle input{width:17px;height:17px;accent-color:#555}
+.potentialToggles{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:7px}
+.potentialToggles label{display:flex;align-items:center;justify-content:center;gap:3px;border:1px solid var(--line);background:var(--cell-alt);border-radius:4px;padding:4px 3px;font-size:8px}
+.potentialToggles input{margin:0;accent-color:#555}
+.burstInfo{margin-top:7px;padding:6px;border:1px solid var(--line);background:var(--cell-alt);border-radius:4px;color:var(--muted);font-size:9px;line-height:1.35}
+
 .calculatorGrid{
   display:grid;
   grid-template-columns:266px minmax(820px,1fr) 100px;
-  gap:22px;
+  gap:12px;
   align-items:start;
 }
-.sheetPanel{background:var(--sheet);border:1px solid var(--line-strong)}
+.sheetPanel{background:var(--sheet);border:1px solid var(--line);box-shadow:0 1px 0 rgba(0,0,0,.03)}
 .leftSheet,.rightSheet{min-height:475px}
 .characterHeader{
   height:25px;
@@ -202,10 +242,10 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .exMark{font-size:9px;color:#0b9970;margin-left:4px}
 .gearPreview{display:none}
 
-.lowerGrid{
+ .lowerGrid{
   display:grid;
-  grid-template-columns:minmax(420px,1.25fr) minmax(380px,1fr);
-  gap:55px;
+  grid-template-columns:minmax(430px,1.2fr) minmax(430px,1fr);
+  gap:12px;
   margin-top:18px
 }
 .skillSheet,.potentialSheet{min-height:239px}
@@ -333,4 +373,7 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   .rightRow,.toggleRow,.rightMetric{min-height:52px;border-right:1px solid var(--line)}
   .rightActions{display:flex;align-items:center;justify-content:center}
   .sheetFooter{flex-direction:column}
+}
+@media(max-width:1100px){
+  .buildRibbon{grid-template-columns:130px 160px minmax(240px,1fr) 80px 100px 90px}
 }

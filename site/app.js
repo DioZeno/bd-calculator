@@ -303,16 +303,52 @@ function catalogRowsForSlot(slot){
   return rows;
 }
 function gearCatalogOptions(slot,current){
-  const rows=catalogRowsForSlot(slot);
+  const c=getChar(),g=gearState[slot];
+  if(isExTier(g.tier)){
+    if(c.EXSLOT===slot && c.EXSTAT){
+      const item=matchingCatalogExclusive(c,slot,g.tier);
+      const label=(item&&item.name_en?item.name_en:(c.EXNAME||"Exclusive Gear"))+" · "+g.tier+" · EX";
+      const value=item?item.variant_id:"__auto_ex__";
+      return '<option value="'+value+'" selected>'+label+"</option>";
+    }
+    return '<option value="" selected>-</option>';
+  }
+  const rows=catalogRowsForSlot(slot).filter(function(r){return r.category!=="Exclusive";});
   return '<option value="">Manual / Custom</option>'+rows.map(function(r){
-    const label=(r.name_en||r.weapon_id)+" · "+r.tier+(r.category==="Exclusive"?" · EX":r.category==="Monster"?" · Fiend":"");
+    const label=(r.name_en||r.weapon_id)+" · "+r.tier+(r.category==="Monster"?" · Fiend":"");
     return '<option value="'+r.variant_id+'" '+(current===r.variant_id?"selected":"")+'>'+label+"</option>";
   }).join("");
 }
 function getCatalogGear(id){return gearCatalog.find(function(r){return r.variant_id===id;})||null;}
+function isExTier(tier){return /^EX\s+(R|SR|UR)$/.test(String(tier||""));}
+function exKeyForTier(tier){
+  return tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":tier==="EX R"?"EX R":null;
+}
+function matchingCatalogExclusive(c,slot,tier){
+  return gearCatalog.find(function(r){
+    return r.category==="Exclusive" && r.slot===slot && r.tier===tier && catalogMatchesCharacter(r,c);
+  })||null;
+}
+function syncExclusiveGearForSlot(slot){
+  const c=getChar(),g=gearState[slot];
+  if(isExTier(g.tier) && c.EXSLOT===slot && c.EXSTAT){
+    const item=matchingCatalogExclusive(c,slot,g.tier);
+    g.catalogId=item?item.variant_id:"";
+    g.autoExclusive=true;
+  }else{
+    if(g.autoExclusive)g.catalogId="";
+    g.autoExclusive=false;
+  }
+}
+function syncAllExclusiveGear(){
+  Object.keys(gearState).forEach(syncExclusiveGearForSlot);
+}
+
 function applyCatalogGear(slot,id){
   const g=gearState[slot];
+  if(id==="__auto_ex__"){syncExclusiveGearForSlot(slot);return;}
   g.catalogId=id||"";
+  g.autoExclusive=false;
   const item=getCatalogGear(id);
   if(!item)return;
   g.tier=item.tier;
@@ -324,6 +360,7 @@ function buildGearUI(){
   const grid=$("#gearGrid");
   grid.innerHTML='<div class="gearLabels"><div>Gear</div><div>Tier</div><div>Refinement</div><div>Exclusive</div><div>Basic 1</div><div>Basic 2</div><div>Substat 1</div><div>Substat 2</div><div>Substat 3</div><div>Gear Slot</div></div>';
   Object.keys(DEFAULT_GEAR).forEach(function(slot){
+    syncExclusiveGearForSlot(slot);
     const g=gearState[slot],col=document.createElement("article");
     col.className="gearCard";col.dataset.slot=slot;
     let refs="";
@@ -370,7 +407,12 @@ function refreshMainOptions(){
     const gearSelect=card.querySelector("[data-gear]");
     if(gearSelect){
       gearSelect.innerHTML=gearCatalogOptions(slot,g.catalogId||"");
-      gearSelect.value=g.catalogId||"";
+      if(isExTier(g.tier)){
+        gearSelect.disabled=true;
+      }else{
+        gearSelect.disabled=false;
+        gearSelect.value=g.catalogId||"";
+      }
     }
   });
 }
@@ -411,7 +453,7 @@ function updateBurstOptions(){
   if(!rows.length)el.value="0";
 }
 function resetBuild(){
-  gearState=clone(DEFAULT_GEAR);buildGearUI();
+  gearState=clone(DEFAULT_GEAR);syncAllExclusiveGear();buildGearUI();
   const defaults={collectionAtk:80,collectionHp:80,externalAtk:0,externalCr:0,externalCdmg:0,externalEle:0,skillMult:100,hits:1,chains:0,chainBuff:0,enemyRes:0,dmgMult:1,enemyHp:30000,enemyAtk:1000};
   Object.keys(defaults).forEach(function(id){const el=$("#"+id);if(el)el.value=defaults[id];});
   ["engraveLife","engraveStrength","engravePerseverance"].forEach(function(id){if($("#"+id))$("#"+id).value="10";});
@@ -430,7 +472,14 @@ function wire(){
       }
       if(e.target.dataset.k){
         g[e.target.dataset.k]=e.target.value;
-        if(e.target.dataset.k==="tier")g.catalogId="";
+        if(e.target.dataset.k==="tier"){
+          g.catalogId="";
+          g.autoExclusive=false;
+          syncExclusiveGearForSlot(slot);
+          buildGearUI();
+          render();
+          return;
+        }
         refreshMainOptions();
       }
       if(e.target.dataset.sub!=null)g.subs[+e.target.dataset.sub]=e.target.value;
@@ -438,7 +487,12 @@ function wire(){
       render();return;
     }
     if(e.target.id==="character"){
-      updateLevelOptions();refreshMainOptions();updateCostumeOptions();buildGearUI();render();return;
+      updateLevelOptions();
+      updateCostumeOptions();
+      syncAllExclusiveGear();
+      buildGearUI();
+      render();
+      return;
     }
     if(e.target.id==="costume"){syncCalculationMode();updateBurstOptions();render();return;}
     render();
@@ -453,38 +507,15 @@ function wire(){
 
 function addStat(obj,k,v){if(k)obj[k]=(obj[k]||0)+(Number(v)||0);}
 function exValueFor(c,tier,slot,g){
-  if(!String(tier).startsWith("EX"))return null;
-  const named=g&&g.catalogId?getCatalogGear(g.catalogId):null;
-
-  // For named BD2DB exclusive gear, the catalog is the authority for the
-  // exclusive stat type and slot. The copied calculator remains the authority
-  // for the character's exact EX R / SR / UR numeric value.
-  if(named){
-    if(named.category!=="Exclusive"||!catalogMatchesCharacter(named,c))return null;
-    const stats=abilityTokens(named.extra_ability);
-    const stat=stats[0]||c.EXSTAT;
-    if(!stat)return null;
-    const key=tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":"EX R";
-    const raw=c[key];
-    if(raw==="-"||raw===""||raw==null)return null;
-    return {
-      stat:stat,
-      value:Number(raw)||0,
-      name:named.name_en||c.EXNAME||"Exclusive Gear",
-      source:"BD2DB"
-    };
-  }
-
-  // Manual EX mode mirrors the spreadsheet: an EX tier in the character's
-  // exclusive slot automatically receives that character's exclusive bonus.
-  if(c.EXSLOT!==slot||!c.EXSTAT)return null;
-  const key=tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":"EX R",raw=c[key];
+  if(!isExTier(tier) || c.EXSLOT!==slot || !c.EXSTAT)return null;
+  const key=exKeyForTier(tier),raw=key?c[key]:null;
   if(raw==="-"||raw===""||raw==null)return null;
+  const named=matchingCatalogExclusive(c,slot,tier);
   return {
     stat:c.EXSTAT,
     value:Number(raw)||0,
-    name:c.EXNAME||"Exclusive Gear",
-    source:"Sheet"
+    name:(named&&named.name_en)||c.EXNAME||"Exclusive Gear",
+    source:named?"BD2DB + Sheet":"Sheet"
   };
 }
 function mainGearValue(g,stat){

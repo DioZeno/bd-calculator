@@ -147,8 +147,8 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .gearSheet{overflow:hidden}
 .gearGrid{
   display:grid;
-  grid-template-columns:116px repeat(5,minmax(130px,1fr));
-  min-width:810px;
+  grid-template-columns:116px repeat(5,minmax(160px,1fr));
+  min-width:916px;
 }
 .gearLabels,.gearCard{display:grid;grid-template-rows:25px 25px 25px repeat(5,25px) 25px}
 .gearLabels{
@@ -171,6 +171,19 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .gearCell select{
   width:100%;height:19px;border:0;border-radius:10px;background:var(--input);
   text-align:center;font-size:12px;font-weight:700;outline:none;appearance:auto
+}
+.gearStatCell{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 58px;
+  gap:5px;
+  align-items:center;
+}
+.gearStatValue{
+  display:block;
+  text-align:right;
+  font-size:11px;
+  white-space:nowrap;
+  font-weight:700;
 }
 .gearTier select{background:var(--cyan);color:#164a5f}
 .gearTier:not(.exclusiveTier) select{background:var(--gold);color:#583c00}
@@ -313,8 +326,8 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   .calculatorGrid{display:block}
   .leftSheet,.rightSheet{min-height:0;margin-bottom:12px}
   .centerArea{overflow-x:auto}
-  .gearSheet{min-width:810px}
-  .lowerGrid{min-width:810px;gap:16px}
+  .gearSheet{min-width:916px}
+  .lowerGrid{min-width:916px;gap:16px}
   .rightSheet{display:grid;grid-template-columns:repeat(4,1fr);margin-top:12px}
   .rightSheet h3{grid-column:1/-1}
   .rightRow,.toggleRow,.rightMetric{min-height:52px;border-right:1px solid var(--line)}

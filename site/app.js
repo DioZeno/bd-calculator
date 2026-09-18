@@ -168,8 +168,9 @@ function setup(){
   updateLevelOptions();
   updateCostumeOptions();
   render();
-  $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+costumes.length+" costumes";
-  $("#catalogCount").textContent=characters.length+" / "+costumes.length;
+  const actualCostumeCount=costumes.filter(function(x){return !x.is_basic_attack;}).length;
+  $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+actualCostumeCount+" costumes + Basic Attack";
+  updateCatalogCount();
 }
 function fillProgressionSelects(){
   ["engraveLife","engraveStrength","engravePerseverance"].forEach(function(id){
@@ -181,7 +182,19 @@ function fillProgressionSelects(){
 }
 function attackType(c){return Number(c.ATK)>0?"physical":"magic";}
 function getChar(){return characters.find(function(c){return c.__id===$("#character").value;})||characters[0];}
-function getCostume(){return costumes.find(function(c){return c.id===$("#costume").value;})||null;}
+function isBasicAttack(){return $("#costume")&&$("#costume").value==="__basic__";}
+function getCostume(){
+  if(isBasicAttack()){
+    const c=getChar();
+    return {id:"__basic__",character_id:c.__id,name:"Basic Attack",skill_name:"Basic Attack",target:c.TARGET||"Very Front",is_basic_attack:true};
+  }
+  return costumes.find(function(c){return c.id===$("#costume").value;})||null;
+}
+function updateCatalogCount(){
+  const c=getChar();
+  const n=costumes.filter(function(x){return x.character_id===c.__id&&!x.is_basic_attack;}).length;
+  if($("#catalogCount"))$("#catalogCount").textContent=n+" costume"+(n===1?"":"s")+" + Basic";
+}
 function tierOptions(){return Object.keys(gearTables.main).filter(function(x){return x&&x!=="NULL";}).map(function(x){return "<option>"+x+"</option>";}).join("");}
 function selectOptions(items,current){return items.map(function(x){return "<option "+(x===current?"selected":"")+">"+x+"</option>";}).join("");}
 
@@ -235,17 +248,29 @@ function updateLevelOptions(){
 function updateCostumeOptions(){
   const c=getChar(),el=$("#costume"),prev=el.value;
   const rows=costumes.filter(function(x){return x.character_id===c.__id&&!x.is_basic_attack;});
-  el.innerHTML=rows.length?rows.map(function(x){return '<option value="'+x.id+'">'+x.name+"</option>";}).join(""):'<option value="">No catalog costume</option>';
-  if(prev&&rows.some(function(x){return x.id===prev;}))el.value=prev;
+  el.innerHTML='<option value="__basic__">Basic Attack</option>'+rows.map(function(x){return '<option value="'+x.id+'">'+x.name+"</option>";}).join("");
+  if(prev==="__basic__")el.value="__basic__";
+  else if(prev&&rows.some(function(x){return x.id===prev;}))el.value=prev;
   else{
     const preferred=rows.find(function(x){return c.Name==="Tyr"&&x.name==="Innocent Bunny";});
-    if(preferred)el.value=preferred.id;
+    el.value=preferred?preferred.id:"__basic__";
   }
+  updateCatalogCount();
+  syncCalculationMode();
   updateBurstOptions();
+}
+function syncCalculationMode(){
+  const basic=isBasicAttack();
+  $("#dupe").disabled=basic;
+  if(basic){
+    $("#dupe").value="0";
+    $("#skillMult").value="100";
+    $("#hits").value="1";
+  }
 }
 function updateBurstOptions(){
   const costume=getCostume(),el=$("#burst");
-  const rows=costume?costumeBursts.filter(function(x){return x.costume_id===costume.id;}):[];
+  const rows=(!costume||costume.is_basic_attack)?[]:costumeBursts.filter(function(x){return x.costume_id===costume.id;});
   el.innerHTML='<option value="0">None</option>'+rows.map(function(x){return '<option value="'+x.stage+'">Burst '+x.stage+"</option>";}).join("");
   el.disabled=!rows.length;
   if(!rows.length)el.value="0";
@@ -273,7 +298,7 @@ function wire(){
       const val=e.target.value;$("#character").value=val;$("#buildCharacter").value=val;
       updateLevelOptions();refreshMainOptions();updateCostumeOptions();render();return;
     }
-    if(e.target.id==="costume"){updateBurstOptions();render();return;}
+    if(e.target.id==="costume"){syncCalculationMode();updateBurstOptions();render();return;}
     render();
   });
   $("#resetBtn").onclick=resetBuild;$("#resetBtnMirror").onclick=resetBuild;
@@ -368,10 +393,19 @@ function currentDupeValue(obj,dupe){
   if(!obj||typeof obj!=="object")return null;
   return obj[String(dupe)]!=null?obj[String(dupe)]:obj[dupe]!=null?obj[dupe]:null;
 }
-function updateCostumePanel(){
+function updateCostumePanel(r){
   const costume=getCostume(),c=getChar(),dupe=Number($("#dupe").value)||0;
   if(!costume){
     $("#skillTitle").textContent="Damage Test";$("#skillDescription").textContent="No costume data loaded for this character.";$("#skillProgression").innerHTML="";$("#burstInfo").textContent="No Burst data for this costume.";return;
+  }
+  if(costume.is_basic_attack){
+    const type=r.atkKey==="ATK"?"Physical":"Magic";
+    $("#skillTitle").textContent="Basic Attack";
+    $("#skillDescription").textContent="Deal "+fmt(r.baseHit)+" "+type+" Damage based off of 100% of "+r.atkKey+". Gain 1 SP.";
+    $("#targetBadge").textContent=c.TARGET==="Vault"?"Vault":"Very Front";
+    $("#skillProgression").innerHTML='<span class="skillVarChip"><span>Multiplier</span><b>100%</b></span><span class="skillVarChip"><span>SP Gain</span><b>1</b></span>';
+    $("#burstInfo").textContent="Basic Attack has no costume upgrade, potential, or Burst stage.";
+    return;
   }
   $("#skillTitle").textContent=costume.skill_name||costume.name;
   $("#skillDescription").textContent=costume.skill_description||"No description available.";
@@ -420,6 +454,6 @@ function render(){
     ["DEF",pct(r.def)],["MRES",pct(r.mres)],["Property",pct(r.property)],["Skill Test",fmt(r.damage)]
   ];
   $("#breakdown").innerHTML=breakdown.map(function(row){return "<article><span>"+row[0]+"</span><strong>"+row[1]+"</strong></article>";}).join("");
-  updateCostumePanel();
+  updateCostumePanel(r);
 }
 loadData();

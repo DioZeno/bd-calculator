@@ -1,5 +1,5 @@
 const SUPABASE_URL = "https://zhjasralevblmvqthqln.supabase.co";
-const SUPABASE_KEY = "sb_publishable_vbsSnFYb7NDdDEv-iAC40w_G55Rz379";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoamFzcmFsZXZibG12cXRocWxuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3NDM1MjQsImV4cCI6MjEwNTMxOTUyNH0.OcrncbhHVr1VLxrh5Y4wh1PhsfATdMWzyG9KCbutrwc";
 const SHEET_ID = "1aNXv7zzY3G4YqqRhInpfIN9ei4skCf2iGYCG9oYyQ1o";
 
 const STAT_NAMES = ["ATK","MATK","ATK%","MATK%","HP","HP%","CR","CDMG","DEF","MRES"];
@@ -61,39 +61,45 @@ function toLegacyChar(r){
   };
 }
 async function loadSupabase(){
-  const data=await Promise.all([
+  // Critical catalog data must load. Optional progression tables may be empty or
+  // temporarily unavailable without forcing the whole app back to Google Sheets.
+  const critical=await Promise.all([
     sb("characters","select=*&order=name.asc"),
     sb("costumes","select=*&order=character_id.asc,name.asc"),
-    sb("costume_skill_variables","select=*&order=costume_id.asc,variable_index.asc"),
-    sb("costume_potentials","select=*"),
-    sb("costume_bursts","select=*&order=costume_id.asc,stage.asc"),
-    sb("gear_tiers","select=*"),
-    sb("engraving_steps","select=*&order=stat.asc,step.asc"),
-    sb("awakening_values","select=*"),
-    sb("potential_values","select=*")
+    sb("gear_tiers","select=*")
   ]);
-  characters=data[0].map(toLegacyChar);
-  costumes=data[1];
-  costumeVariables=data[2];
-  costumePotentials=data[3];
-  costumeBursts=data[4];
+  const optional=await Promise.all([
+    sb("costume_skill_variables","select=*&order=costume_id.asc,variable_index.asc").catch(function(){return [];}),
+    sb("costume_potentials","select=*").catch(function(){return [];}),
+    sb("costume_bursts","select=*&order=costume_id.asc,stage.asc").catch(function(){return [];}),
+    sb("engraving_steps","select=*&order=stat.asc,step.asc").catch(function(){return [];}),
+    sb("awakening_values","select=*").catch(function(){return [];}),
+    sb("potential_values","select=*").catch(function(){return [];})
+  ]);
+  characters=critical[0].map(toLegacyChar);
+  costumes=critical[1];
+  costumeVariables=optional[0];
+  costumePotentials=optional[1];
+  costumeBursts=optional[2];
   gearTables={main:{},sub:{},refine:{}};
-  data[5].forEach(function(r){
+  critical[2].forEach(function(r){
     if(!gearTables[r.section][r.tier])gearTables[r.section][r.tier]={};
     gearTables[r.section][r.tier][r.stat]=Number(r.value)||0;
   });
   engravingSteps={};
-  data[6].forEach(function(r){
+  optional[3].forEach(function(r){
     if(!engravingSteps[r.stat])engravingSteps[r.stat]={};
     engravingSteps[r.stat][r.step]=Number(r.value)||0;
   });
   awakeningValues={};
-  data[7].forEach(function(r){awakeningValues[r.stat]=Number(r.value)||0;});
+  optional[4].forEach(function(r){awakeningValues[r.stat]=Number(r.value)||0;});
   potentialValues={};
-  data[8].forEach(function(r){
-    const k=[r.rarity,r.kind,r.stat].join("|");
-    potentialValues[k]=Number(r.value)||0;
+  optional[5].forEach(function(r){
+    potentialValues[[r.rarity,r.kind,r.stat].join("|")]=Number(r.value)||0;
   });
+  if(!characters.length||!costumes.length||!Object.keys(gearTables.main).length){
+    throw new Error("Supabase critical catalog empty");
+  }
   catalogSource="Supabase";
 }
 function gvizRaw(sheet){
@@ -159,9 +165,8 @@ async function loadData(){
 function setup(){
   const options=characters.map(function(c){return "<option value=\""+c.__id+"\">"+c.Name+"</option>";}).join("");
   $("#character").innerHTML=options;
-  $("#buildCharacter").innerHTML=options;
   const start=characters.some(function(c){return c.Name==="Tyr";})?"tyr":characters[0].__id;
-  $("#character").value=start;$("#buildCharacter").value=start;
+  $("#character").value=start;
   fillProgressionSelects();
   buildGearUI();
   wire();
@@ -285,7 +290,7 @@ function resetBuild(){
   updateLevelOptions();updateCostumeOptions();render();
 }
 function wire(){
-  document.addEventListener("input",function(e){
+  function handleControlChange(e){
     const card=e.target.closest(".gearCard");
     if(card){
       const s=card.dataset.slot,g=gearState[s];
@@ -294,13 +299,14 @@ function wire(){
       if(e.target.dataset.ref!=null)g.ref[+e.target.dataset.ref]=e.target.value;
       render();return;
     }
-    if(e.target.id==="character"||e.target.id==="buildCharacter"){
-      const val=e.target.value;$("#character").value=val;$("#buildCharacter").value=val;
+    if(e.target.id==="character"){
       updateLevelOptions();refreshMainOptions();updateCostumeOptions();render();return;
     }
     if(e.target.id==="costume"){syncCalculationMode();updateBurstOptions();render();return;}
     render();
-  });
+  }
+  document.addEventListener("input",handleControlChange);
+  document.addEventListener("change",handleControlChange);
   $("#resetBtn").onclick=resetBuild;$("#resetBtnMirror").onclick=resetBuild;
   document.querySelectorAll(".themeDock button").forEach(function(b){
     b.onclick=function(){document.documentElement.dataset.theme=b.dataset.theme;document.querySelectorAll(".themeDock button").forEach(function(x){x.classList.toggle("active",x===b);});};

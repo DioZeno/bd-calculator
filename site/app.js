@@ -144,11 +144,45 @@ function parseGear(rows){
 }
 async function loadSheetFallback(){
   gearTables={main:{},sub:{},refine:{}};
-  const data=await Promise.all([gvizRaw("Base Stats"),gvizRaw("Gear Stats")]);
+  const data=await Promise.all([
+    gvizRaw("Base Stats"),
+    gvizRaw("Gear Stats"),
+    gvizRaw("Skills").catch(function(){return [];})
+  ]);
   characters=parseBase(data[0]);
   parseGear(data[1]);
-  costumes=[];costumeVariables=[];costumePotentials=[];costumeBursts=[];
-  catalogSource="Google Sheet fallback";
+
+  // Keep the calculator usable even if Supabase cannot be reached from the browser.
+  // The hidden Skills sheet contains all ordinary costume rows and their displayed
+  // skill metadata. Basic Attack remains a universal synthetic calculation mode.
+  costumes=[];
+  (data[2]||[]).forEach(function(r){
+    const label=String(r[1]||"").trim();
+    if(!label||label.indexOf(" // ")<0)return;
+    const parts=label.split(" // ");
+    const characterName=parts.shift();
+    const costumeName=parts.join(" // ");
+    if(!costumeName||costumeName==="Basic Attack")return;
+    const characterId=slug(characterName);
+    if(!characters.some(function(c){return c.__id===characterId;}))return;
+    const id=characterId+"--"+slug(costumeName);
+    if(costumes.some(function(x){return x.id===id;}))return;
+    costumes.push({
+      id:id,
+      character_id:characterId,
+      name:costumeName,
+      skill_name:String(r[3]||costumeName),
+      target:String(r[6]||""),
+      skill_description:String(r[7]||""),
+      base_sp:Number(r[8])||0,
+      base_cooldown:Number(r[9])||0,
+      total_damage_label:String(r[10]||""),
+      is_basic_attack:false,
+      source:"google_sheet_fallback"
+    });
+  });
+  costumeVariables=[];costumePotentials=[];costumeBursts=[];
+  catalogSource=costumes.length?"Google Sheet fallback · costume catalog loaded":"Google Sheet fallback";
 }
 async function loadData(){
   try{await loadSupabase();}

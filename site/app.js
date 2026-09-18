@@ -157,14 +157,14 @@ function buildGearUI(){
     });
     let subs="";
     [0,1,2].forEach(function(i){
-      subs+='<div class="gearCell gearSub"><select data-sub="'+i+'">'+selectOptions(SUB_OPTIONS,g.subs[i])+"</select></div>";
+      subs+='<div class="gearCell gearStatCell gearSub"><select data-sub="'+i+'">'+selectOptions(SUB_OPTIONS,g.subs[i])+'</select><b class="gearStatValue" data-value="sub'+i+'">—</b></div>';
     });
     col.innerHTML=
       '<div class="gearCell gearTier"><select data-k="tier">'+tierOptions()+"</select></div>"+
       '<div class="gearCell"><div class="refineGroup">'+refs+"</div></div>"+
       '<div class="gearCell"><div class="exclusiveValue"><span>-</span><b>-</b></div></div>'+
-      '<div class="gearCell gearBasic"><select data-k="main1"></select></div>'+
-      '<div class="gearCell gearBasic"><select data-k="main2"></select></div>'+
+      '<div class="gearCell gearStatCell gearBasic"><select data-k="main1"></select><b class="gearStatValue" data-value="main1">—</b></div>'+
+      '<div class="gearCell gearStatCell gearBasic"><select data-k="main2"></select><b class="gearStatValue" data-value="main2">—</b></div>'+
       subs+
       '<div class="gearCell gearSlotName"><span>'+slot+'</span><small class="exMark"></small></div>'+
       '<div class="gearPreview"></div>';
@@ -242,6 +242,15 @@ function exValueFor(c,tier,slot){
   const raw=c[key];
   if(raw==="-" || raw==="" || raw==null)return null;
   return {stat:c.EXSTAT,value:Number(raw)||0};
+}
+function mainGearValue(g,stat){
+  const tier=g.tier,m=gearTables.main[tier]||{},ref=gearTables.refine[tier]||{};
+  const factor=g.ref.reduce(function(a,x){return a+(REFINE_FACTOR[x]||0);},0);
+  return 2*(m[stat]||0)+(ref[stat]||0)*factor;
+}
+function subGearValue(g,stat){
+  const sub=gearTables.sub[g.tier]||{};
+  return sub[stat]||0;
 }
 function gearStats(c){
   const total={};
@@ -347,6 +356,16 @@ function render(){
     card.querySelector(".exMark").textContent=ex?"EX":"";
     const exBox=card.querySelector(".exclusiveValue");
     exBox.innerHTML=ex?("<span>"+ex.stat+"</span><b>"+displayStat(ex.stat,ex.value)+"</b>"):"<span>-</span><b>-</b>";
+    const main1Value=mainGearValue(g,g.main1);
+    const main2Value=mainGearValue(g,g.main2);
+    const main1Out=card.querySelector('[data-value="main1"]');
+    const main2Out=card.querySelector('[data-value="main2"]');
+    if(main1Out)main1Out.textContent=displayStat(g.main1,main1Value);
+    if(main2Out)main2Out.textContent=displayStat(g.main2,main2Value);
+    g.subs.forEach(function(stat,i){
+      const out=card.querySelector('[data-value="sub'+i+'"]');
+      if(out)out.textContent=displayStat(stat,subGearValue(g,stat));
+    });
   });
 
   const breakdown=[

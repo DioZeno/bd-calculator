@@ -19,32 +19,56 @@ const DEFAULT_GEAR = {
 const REFINE_FACTOR = {C:2.4,B:2.8,A:3.2,S:3.52};
 const MAX_LEVEL = {3:40,4:60,5:80};
 
+const $ = function(s){ return document.querySelector(s); };
+const fmt = function(n){ return Math.round(Number(n)||0).toLocaleString(); };
+const pct = function(n){ return (((Number(n)||0)*100).toFixed(2))+"%"; };
+const clone = function(x){ return JSON.parse(JSON.stringify(x)); };
+
 let characters = [];
 let gearTables = {main:{},sub:{},refine:{}};
-let gearState = structuredClone(DEFAULT_GEAR);
+let gearState = clone(DEFAULT_GEAR);
 
-const $ = s => document.querySelector(s);
-const fmt = n => Math.round(Number(n)||0).toLocaleString();
-const pct = n => `${((Number(n)||0)*100).toFixed(2)}%`;
-const clone = x => JSON.parse(JSON.stringify(x));
-
-function gviz(sheet){
-  return new Promise((resolve,reject)=>{
+function gvizRaw(sheet){
+  return new Promise(function(resolve,reject){
     const cb = "__gviz_"+Math.random().toString(36).slice(2);
     const script = document.createElement("script");
-    const tqx = `out:json;responseHandler:${cb}`;
-    script.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheet)}&headers=1&tqx=${encodeURIComponent(tqx)}`;
-    const timer=setTimeout(()=>{cleanup();reject(new Error("timeout"))},9000);
-    function cleanup(){clearTimeout(timer);delete window[cb];script.remove()}
-    window[cb]=res=>{
+    const tqx = "out:json;responseHandler:"+cb;
+    script.src = "https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/gviz/tq?sheet="+encodeURIComponent(sheet)+"&headers=0&tqx="+encodeURIComponent(tqx);
+    const timer=setTimeout(function(){cleanup();reject(new Error("timeout"));},9000);
+    function cleanup(){ clearTimeout(timer); delete window[cb]; script.remove(); }
+    window[cb]=function(res){
       cleanup();
       if(res.status==="error") return reject(new Error("Sheet query failed"));
-      const cols=res.table.cols.map(c=>c.label||c.id);
-      const rows=res.table.rows.map(r=>r.c.map(c=>c?.v ?? ""));
-      resolve({cols,rows});
+      const rows=res.table.rows.map(function(r){ return r.c.map(function(c){ return c && c.v != null ? c.v : ""; }); });
+      resolve(rows);
     };
-    script.onerror=()=>{cleanup();reject(new Error("network"))};
+    script.onerror=function(){cleanup();reject(new Error("network"));};
     document.head.appendChild(script);
+  });
+}
+function parseBase(rows){
+  const headerIndex=rows.findIndex(function(r){ return String(r[0]).trim()==="Name"; });
+  if(headerIndex<0) throw new Error("Base Stats header not found");
+  const header=rows[headerIndex].map(function(x){return String(x).trim();});
+  return rows.slice(headerIndex+1).filter(function(r){return r[0];}).map(function(r){
+    const obj={};
+    header.forEach(function(h,i){obj[h]=r[i];});
+    return obj;
+  });
+}
+function parseGear(rows){
+  let mode=null,header=null;
+  rows.forEach(function(r){
+    const first=String(r[0] == null ? "" : r[0]).trim();
+    if(first==="Main Stats"){mode="main";header=null;return;}
+    if(first==="Sub Stats"){mode="sub";header=null;return;}
+    if(first==="Refinements"){mode="refine";header=null;return;}
+    if(first==="Tier"){header=r.map(function(x){return String(x).trim();});return;}
+    if(mode && header && first){
+      const obj={};
+      header.slice(1).forEach(function(s,i){if(s)obj[s]=Number(r[i+1])||0;});
+      if(Object.keys(obj).length)gearTables[mode][first]=obj;
+    }
   });
 }
 function fallback(){
@@ -79,191 +103,256 @@ function fallback(){
     ["SR2",1,1,.007,.007,6.3,.007,.00236,.014,.0021,.0021],["SR1",.9,.9,.006,.006,5.2,.006,.00196,.0118,.00176,.00176],
     ["EX R",1,1,.00668,.00668,6,.00668,.00224,.01334,.002,.002],["R4",1,1,.00668,.00668,6,.00668,.00224,.01334,.002,.002]
   ];
-  [ ["main",mainRows],["sub",subRows],["refine",refRows] ].forEach(([kind,rows])=>{
-    rows.forEach(r=>{gearTables[kind][r[0]]=Object.fromEntries(STAT_NAMES.map((s,i)=>[s,Number(r[i+1])||0]))})
+  [["main",mainRows],["sub",subRows],["refine",refRows]].forEach(function(pair){
+    const kind=pair[0],rows=pair[1];
+    rows.forEach(function(r){
+      const obj={};
+      STAT_NAMES.forEach(function(s,i){obj[s]=Number(r[i+1])||0;});
+      gearTables[kind][r[0]]=obj;
+    });
   });
 }
 async function loadData(){
   try{
-    const [base,gear]=await Promise.all([gviz("Base Stats"),gviz("Gear Stats")]);
-    const head=base.cols;
-    characters=base.rows.filter(r=>r[0]).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]])));
-    const rows=gear.rows;
-    let mode=null, statHeader=null;
-    rows.forEach(r=>{
-      const first=String(r[0]??"");
-      if(first==="Main Stats"){mode="main";statHeader=null;return}
-      if(first==="Sub Stats"){mode="sub";statHeader=null;return}
-      if(first==="Refinements"){mode="refine";statHeader=null;return}
-      if(first==="Tier"){statHeader=r;return}
-      if(mode && statHeader && first){
-        const obj={};
-        statHeader.slice(1).forEach((s,i)=>obj[s]=Number(r[i+1])||0);
-        gearTables[mode][first]=obj;
-      }
-    });
-    if(!characters.length || !Object.keys(gearTables.main).length) throw new Error("empty data");
-    $("#dataStatus").textContent=`Live source loaded · ${characters.length} characters · ${Object.keys(gearTables.main).length} gear tiers`;
+    gearTables={main:{},sub:{},refine:{}};
+    const results=await Promise.all([gvizRaw("Base Stats"),gvizRaw("Gear Stats")]);
+    characters=parseBase(results[0]);
+    parseGear(results[1]);
+    if(!characters.length || !Object.keys(gearTables.main).length)throw new Error("empty data");
+    $("#dataStatus").textContent="Live sheet · "+characters.length+" characters · "+Object.keys(gearTables.main).length+" gear tiers";
   }catch(err){
+    gearTables={main:{},sub:{},refine:{}};
     fallback();
-    $("#dataStatus").textContent="Live Sheet lookup unavailable — using bundled fallback data.";
+    $("#dataStatus").textContent="Sheet lookup unavailable · bundled fallback active";
   }
   setup();
 }
-
 function setup(){
   const sel=$("#character");
-  sel.innerHTML=characters.map(c=>`<option>${c.Name}</option>`).join("");
-  if(characters.some(c=>c.Name==="Nebris")) sel.value="Nebris";
+  sel.innerHTML=characters.map(function(c){return "<option>"+c.Name+"</option>";}).join("");
+  if(characters.some(function(c){return c.Name==="Nebris";}))sel.value="Nebris";
   buildGearUI();
   wire();
   updateLevelOptions();
   render();
 }
-function attackType(c){return Number(c.ATK)>0?"physical":"magic"}
+function attackType(c){return Number(c.ATK)>0?"physical":"magic";}
 function tierOptions(){
-  const tiers=Object.keys(gearTables.main).filter(x=>x && x!=="NULL");
-  return tiers.map(x=>`<option>${x}</option>`).join("");
+  return Object.keys(gearTables.main).filter(function(x){return x && x!=="NULL";}).map(function(x){return "<option>"+x+"</option>";}).join("");
 }
-function selectOptions(items,current){return items.map(x=>`<option ${x===current?"selected":""}>${x}</option>`).join("")}
+function selectOptions(items,current){
+  return items.map(function(x){return "<option "+(x===current?"selected":"")+">"+x+"</option>";}).join("");
+}
 function buildGearUI(){
   const grid=$("#gearGrid");
-  grid.innerHTML="";
-  Object.keys(DEFAULT_GEAR).forEach(slot=>{
+  grid.innerHTML='<div class="gearLabels"><div>Tier</div><div>Refinement</div><div>Exclusive</div><div>Basic 1</div><div>Basic 2</div><div>Substat 1</div><div>Substat 2</div><div>Substat 3</div><div>Gear Slot</div></div>';
+  Object.keys(DEFAULT_GEAR).forEach(function(slot){
     const g=gearState[slot];
-    const card=document.createElement("article");
-    card.className="gearCard";card.dataset.slot=slot;
-    card.innerHTML=`<div class="gearTitle"><strong>${slot}</strong><span class="exMark"></span></div>
-    <div class="gearFields">
-      <label class="gearField"><span>Tier</span><select data-k="tier">${tierOptions()}</select></label>
-      <label class="gearField"><span>Basic 1</span><select data-k="main1"></select></label>
-      <label class="gearField"><span>Basic 2</span><select data-k="main2"></select></label>
-      <div class="gearRefine">
-        ${[0,1,2].map(i=>`<label class="gearField"><span>Ref ${i+1}</span><select data-ref="${i}">${selectOptions(["C","B","A","S"],g.ref[i])}</select></label>`).join("")}
-      </div>
-      ${[0,1,2].map(i=>`<label class="gearField"><span>Substat ${i+1}</span><select data-sub="${i}">${selectOptions(SUB_OPTIONS,g.subs[i])}</select></label>`).join("")}
-    </div><div class="gearPreview"></div>`;
-    grid.appendChild(card);
-    card.querySelector('[data-k="tier"]').value=g.tier;
+    const col=document.createElement("article");
+    col.className="gearCard";
+    col.dataset.slot=slot;
+    let refs="";
+    [0,1,2].forEach(function(i){
+      refs+='<select aria-label="Refinement '+(i+1)+'" data-ref="'+i+'">'+selectOptions(["C","B","A","S"],g.ref[i])+"</select>";
+    });
+    let subs="";
+    [0,1,2].forEach(function(i){
+      subs+='<div class="gearCell gearSub"><select data-sub="'+i+'">'+selectOptions(SUB_OPTIONS,g.subs[i])+"</select></div>";
+    });
+    col.innerHTML=
+      '<div class="gearCell gearTier"><select data-k="tier">'+tierOptions()+"</select></div>"+
+      '<div class="gearCell"><div class="refineGroup">'+refs+"</div></div>"+
+      '<div class="gearCell"><div class="exclusiveValue"><span>-</span><b>-</b></div></div>'+
+      '<div class="gearCell gearBasic"><select data-k="main1"></select></div>'+
+      '<div class="gearCell gearBasic"><select data-k="main2"></select></div>'+
+      subs+
+      '<div class="gearCell gearSlotName"><span>'+slot+'</span><small class="exMark"></small></div>'+
+      '<div class="gearPreview"></div>';
+    grid.appendChild(col);
+    const tier=col.querySelector('[data-k="tier"]');
+    if(Array.from(tier.options).some(function(o){return o.value===g.tier;}))tier.value=g.tier;
   });
   refreshMainOptions();
 }
 function refreshMainOptions(){
-  const c=getChar(), type=attackType(c);
-  document.querySelectorAll(".gearCard").forEach(card=>{
+  const c=getChar(),type=attackType(c);
+  document.querySelectorAll(".gearCard").forEach(function(card){
     const slot=card.dataset.slot,g=gearState[slot],opts=SLOT_OPTIONS[slot][type];
-    ["main1","main2"].forEach(k=>{
-      const el=card.querySelector(`[data-k="${k}"]`);
+    ["main1","main2"].forEach(function(k){
+      const el=card.querySelector('[data-k="'+k+'"]');
       let desired=g[k];
       if(!opts.includes(desired)){
-        if(type==="magic") desired=desired.replace("ATK","MATK");
+        if(type==="magic")desired=desired.replace("ATK","MATK");
         else desired=desired.replace("MATK","ATK");
       }
-      if(!opts.includes(desired)) desired=opts[0];
-      g[k]=desired;el.innerHTML=selectOptions(opts,desired);
+      if(!opts.includes(desired))desired=opts[0];
+      g[k]=desired;
+      el.innerHTML=selectOptions(opts,desired);
     });
   });
 }
+function resetBuild(){
+  gearState=clone(DEFAULT_GEAR);
+  buildGearUI();
+  const defaults={collectionAtk:80,collectionHp:80,externalAtk:0,externalCr:0,externalCdmg:0,externalEle:0,skillMult:100,hits:1,chains:0,chainBuff:0,enemyRes:0,dmgMult:1,enemyHp:30000,enemyAtk:1000};
+  Object.keys(defaults).forEach(function(id){const el=$("#"+id);if(el)el.value=defaults[id];});
+  $("#advantage").checked=true;
+  $("#critical").checked=true;
+  $("#expectedCrit").checked=false;
+  updateLevelOptions();
+  render();
+}
 function wire(){
-  document.addEventListener("input",e=>{
+  document.addEventListener("input",function(e){
     const card=e.target.closest(".gearCard");
     if(card){
       const s=card.dataset.slot,g=gearState[s];
-      if(e.target.dataset.k) g[e.target.dataset.k]=e.target.value;
-      if(e.target.dataset.sub!=null) g.subs[+e.target.dataset.sub]=e.target.value;
-      if(e.target.dataset.ref!=null) g.ref[+e.target.dataset.ref]=e.target.value;
-      render();return;
+      if(e.target.dataset.k)g[e.target.dataset.k]=e.target.value;
+      if(e.target.dataset.sub!=null)g.subs[+e.target.dataset.sub]=e.target.value;
+      if(e.target.dataset.ref!=null)g.ref[+e.target.dataset.ref]=e.target.value;
+      render();
+      return;
     }
-    if(e.target.id==="character"){updateLevelOptions();refreshMainOptions()}
+    if(e.target.id==="character"){
+      updateLevelOptions();
+      refreshMainOptions();
+    }
     render();
   });
-  $("#resetBtn").onclick=()=>{gearState=clone(DEFAULT_GEAR);buildGearUI();document.querySelectorAll("input").forEach(el=>{const defaults={collectionAtk:80,collectionHp:80,externalAtk:0,externalCr:0,externalCdmg:0,externalEle:0,skillMult:100,hits:1,chains:0,chainBuff:0,enemyRes:0,dmgMult:1};if(el.id in defaults)el.value=defaults[el.id]});$("#advantage").checked=true;$("#critical").checked=true;$("#expectedCrit").checked=false;render()};
-  document.querySelectorAll(".themeDock button").forEach(b=>b.onclick=()=>{document.documentElement.dataset.theme=b.dataset.theme;document.querySelectorAll(".themeDock button").forEach(x=>x.classList.toggle("active",x===b))});
+  $("#resetBtn").onclick=resetBuild;
+  $("#resetBtnMirror").onclick=resetBuild;
+  document.querySelectorAll(".themeDock button").forEach(function(b){
+    b.onclick=function(){
+      document.documentElement.dataset.theme=b.dataset.theme;
+      document.querySelectorAll(".themeDock button").forEach(function(x){x.classList.toggle("active",x===b);});
+    };
+  });
 }
-function getChar(){return characters.find(c=>c.Name===$("#character").value)||characters[0]}
+function getChar(){return characters.find(function(c){return c.Name===$("#character").value;})||characters[0];}
 function updateLevelOptions(){
   const c=getChar(),max=MAX_LEVEL[Number(c.RARITY)]||80,el=$("#level"),prev=el.value;
-  const opts=[20,40,60,80].filter(x=>x<=max);
-  el.innerHTML=opts.map(x=>`<option value="${x}">${x}</option>`).join("")+`<option value="MAX">MAX</option>`;
-  el.value=prev&&[...el.options].some(o=>o.value===prev)?prev:"MAX";
+  const opts=[20,40,60,80].filter(function(x){return x<=max;});
+  el.innerHTML=opts.map(function(x){return '<option value="'+x+'">'+x+"</option>";}).join("")+'<option value="MAX">MAX</option>';
+  el.value=prev&&Array.from(el.options).some(function(o){return o.value===prev;})?prev:"MAX";
 }
-function addStat(obj,k,v){obj[k]=(obj[k]||0)+(Number(v)||0)}
+function addStat(obj,k,v){obj[k]=(obj[k]||0)+(Number(v)||0);}
+function exValueFor(c,tier,slot){
+  if(!String(tier).startsWith("EX") || c.EXSLOT!==slot || !c.EXSTAT)return null;
+  const key=tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":"EX R";
+  const raw=c[key];
+  if(raw==="-" || raw==="" || raw==null)return null;
+  return {stat:c.EXSTAT,value:Number(raw)||0};
+}
 function gearStats(c){
-  const total=Object.fromEntries([...STAT_NAMES,"ELE%"].map(s=>[s,0]));
+  const total={};
+  STAT_NAMES.concat(["ELE%"]).forEach(function(s){total[s]=0;});
   const previews={};
-  Object.entries(gearState).forEach(([slot,g])=>{
-    const tier=g.tier,m=gearTables.main[tier]||{},sub=gearTables.sub[tier]||{},ref=gearTables.refine[tier]||{};
-    const factor=g.ref.reduce((a,x)=>a+(REFINE_FACTOR[x]||0),0);
+  Object.keys(gearState).forEach(function(slot){
+    const g=gearState[slot],tier=g.tier,m=gearTables.main[tier]||{},sub=gearTables.sub[tier]||{},ref=gearTables.refine[tier]||{};
+    const factor=g.ref.reduce(function(a,x){return a+(REFINE_FACTOR[x]||0);},0);
     const piece={};
-    [g.main1,g.main2].forEach(stat=>{const v=2*(m[stat]||0)+(ref[stat]||0)*factor;addStat(total,stat,v);addStat(piece,stat,v)});
-    g.subs.forEach(stat=>{addStat(total,stat,sub[stat]||0);addStat(piece,stat,sub[stat]||0)});
-    if(String(tier).startsWith("EX") && c.EXSLOT===slot && c.EXSTAT){
-      const key=tier==="EX UR"?"EX UR":tier==="EX SR"?"EX SR":"EX R";
-      let v=c[key]; if(v!=="-" && v!=="" && v!=null){v=Number(v)||0;addStat(total,c.EXSTAT,v);addStat(piece,c.EXSTAT,v)}
-    }
+    [g.main1,g.main2].forEach(function(stat){
+      const v=2*(m[stat]||0)+(ref[stat]||0)*factor;
+      addStat(total,stat,v);addStat(piece,stat,v);
+    });
+    g.subs.forEach(function(stat){addStat(total,stat,sub[stat]||0);addStat(piece,stat,sub[stat]||0);});
+    const ex=exValueFor(c,tier,slot);
+    if(ex){addStat(total,ex.stat,ex.value);addStat(piece,ex.stat,ex.value);}
     previews[slot]=piece;
   });
-  return {total,previews};
+  return {total:total,previews:previews};
 }
 function baseAtLevel(c,stat){
   const level=$("#level").value;
-  if(level==="MAX") return Number(c[stat])||0;
+  if(level==="MAX")return Number(c[stat])||0;
   const lv=Number(level)||0;
-  if(stat==="HP") return (Number(c.HP0)||0)*(1+lv/5);
-  if(stat==="ATK") return (Number(c.ATK0)||0)*(1+lv/10);
-  if(stat==="MATK") return (Number(c.MATK0)||0)*(1+lv/10);
+  if(stat==="HP")return (Number(c.HP0)||0)*(1+lv/5);
+  if(stat==="ATK")return (Number(c.ATK0)||0)*(1+lv/10);
+  if(stat==="MATK")return (Number(c.MATK0)||0)*(1+lv/10);
   return Number(c[stat])||0;
 }
 function compute(){
-  const c=getChar(),t=gearStats(c).total;
+  const c=getChar(),gear=gearStats(c),t=gear.total;
   const atkKey=attackType(c)==="physical"?"ATK":"MATK",atkPct=atkKey+"%";
-  const collectionAtk=+$("#collectionAtk").value/100, collectionHp=+$("#collectionHp").value/100;
-  const extAtk=+$("#externalAtk").value/100, extCr=+$("#externalCr").value/100, extCdmg=+$("#externalCdmg").value/100, extEle=+$("#externalEle").value/100;
+  const collectionAtk=+$("#collectionAtk").value/100,collectionHp=+$("#collectionHp").value/100;
+  const extAtk=+$("#externalAtk").value/100,extCr=+$("#externalCr").value/100,extCdmg=+$("#externalCdmg").value/100,extEle=+$("#externalEle").value/100;
   const baseAtk=baseAtLevel(c,atkKey),baseHp=baseAtLevel(c,"HP");
   const atk=Math.floor((baseAtk+(t[atkKey]||0))*(1+collectionAtk+extAtk+(t[atkPct]||0)));
   const hp=Math.floor((baseHp+(t.HP||0))*(1+collectionHp+(t["HP%"]||0)));
   const cr=(Number(c.CR)||0)+(t.CR||0)+extCr;
   const cdmg=(Number(c.CDMG)||0)+(t.CDMG||0)+extCdmg;
-  const def=(Number(c.DEF)||0)+(t.DEF||0), mres=(Number(c.MRES)||0)+(t.MRES||0);
-  const advantage=$("#advantage").checked;
-  const property=advantage ? .5+(t["ELE%"]||0)+extEle : 0;
+  const def=(Number(c.DEF)||0)+(t.DEF||0),mres=(Number(c.MRES)||0)+(t.MRES||0);
+  const property=$("#advantage").checked ? .5+(t["ELE%"]||0)+extEle : 0;
   const skill=+$("#skillMult").value/100,hits=Math.max(1,+$("#hits").value||1),initial=Math.max(0,+$("#chains").value||0);
   const enemy=Math.min(.9,Math.max(-1,+$("#enemyRes").value/100||0)),dmgMult=Math.max(0,+$("#dmgMult").value||0);
   let critFactor=1;
-  if($("#expectedCrit").checked) critFactor=1+Math.min(1,Math.max(0,cr))*cdmg;
-  else if($("#critical").checked) critFactor=1+cdmg;
+  if($("#expectedCrit").checked)critFactor=1+Math.min(1,Math.max(0,cr))*cdmg;
+  else if($("#critical").checked)critFactor=1+cdmg;
   const baseHit=atk*skill*critFactor*(1+property)*(1-enemy)*dmgMult;
   const chainStep=.10+(+$("#chainBuff").value/100||0);
   let damage=0;
-  for(let i=0;i<hits;i++) damage += baseHit*(1+(initial+i)*chainStep);
-  return {c,t,atkKey,atk,hp,cr,cdmg,def,mres,property,skill,hits,enemy,dmgMult,baseHit,damage,gear:gearStats(c)};
+  for(let i=0;i<hits;i++)damage+=baseHit*(1+(initial+i)*chainStep);
+  return {c:c,t:t,atkKey:atkKey,atk:atk,hp:hp,cr:cr,cdmg:cdmg,def:def,mres:mres,property:property,skill:skill,hits:hits,enemy:enemy,dmgMult:dmgMult,baseHit:baseHit,damage:damage,gear:gear};
 }
-function displayStat(k,v){
-  return PERCENT_STATS.has(k)?pct(v):fmt(v);
-}
+function displayStat(k,v){return PERCENT_STATS.has(k)?pct(v):fmt(v);}
 function render(){
   if(!characters.length)return;
-  const r=compute(),c=r.c;
+  const r=compute(),c=r.c,atkPct=r.atkKey+"%";
   $("#rarityBadge").textContent="★".repeat(Number(c.RARITY)||5);
-  $("#charElement").textContent=c.ELE||"—";$("#charRes").textContent=c.RES||"—";
-  $("#charEx").textContent=c.EXNAME?`${c.EXNAME} · ${c.EXSTAT}`:"—";
+  $("#elementSigil").textContent=(c.ELE||"S").slice(0,1);
+  $("#portraitInitial").textContent=(c.Name||"?").slice(0,1).toUpperCase();
+  $("#portraitElement").textContent=c.ELE||"Element";
+  $("#charElement").textContent=c.ELE||"—";
+  $("#detailElement").textContent=c.ELE||"—";
+  $("#charRes").textContent=c.RES||"—";
+  $("#detailExclusive").textContent=c.EXNAME?(c.EXNAME+" · "+c.EXSTAT):"—";
+  $("#charEx").textContent=c.EXNAME?(c.EXNAME+" · "+c.EXSTAT):"—";
   $("#charAttackType").textContent=r.atkKey==="ATK"?"Physical":"Magic";
+  $("#detailAttackType").textContent=r.atkKey==="ATK"?"Physical":"Magic";
+  $("#targetBadge").textContent=c.TARGET||"Target";
+  $("#detailTarget").textContent=c.TARGET||"—";
+
   $("#sumAtkLabel").textContent=r.atkKey;
-  $("#sumHp").textContent=fmt(r.hp);$("#sumAtk").textContent=fmt(r.atk);$("#sumCr").textContent=pct(r.cr);$("#sumCdmg").textContent=pct(r.cdmg);$("#sumDamage").textContent=fmt(r.damage);
+  $("#sumHp").textContent=fmt(r.hp);
+  $("#sumAtk").textContent=fmt(r.atk);
+  $("#sumCr").textContent=pct(r.cr);
+  $("#sumCdmg").textContent=pct(r.cdmg);
+  $("#leftDef").textContent=pct(r.def);
+  $("#leftMres").textContent=pct(r.mres);
+  $("#elementDamageLabel").textContent=(c.ELE?c.ELE+" DMG":"Property DMG");
+  $("#leftProperty").textContent=pct(r.property);
+  $("#resistLabel").textContent=(c.RES||"Property")+" Resist";
+  $("#leftResist").textContent=c.RES?"50%":"—";
+
+  $("#sumDamage").textContent=fmt(r.damage);
   $("#damageBig").textContent=fmt(r.damage);
-  $("#damageExplain").textContent=`${r.hits} hit${r.hits===1?"":"s"} · ${Math.round(r.baseHit).toLocaleString()} base/hit · ${(r.property*100).toFixed(1)}% property bonus · ${(r.enemy*100).toFixed(1)}% enemy mitigation`;
-  document.querySelectorAll(".gearCard").forEach(card=>{
-    const slot=card.dataset.slot,p=r.gear.previews[slot]||{},ex=String(gearState[slot].tier).startsWith("EX")&&c.EXSLOT===slot;
-    card.querySelector(".exMark").textContent=ex?"EX active":"";
-    const parts=Object.entries(p).filter(([,v])=>Math.abs(v)>1e-9).map(([k,v])=>`${k} ${displayStat(k,v)}`);
-    card.querySelector(".gearPreview").innerHTML=parts.length?parts.map(x=>`<strong>${x}</strong>`).join(" · "):"No stats";
+  $("#damageExplain").textContent=r.hits+" hit"+(r.hits===1?"":"s")+" · "+Math.round(r.baseHit).toLocaleString()+" base/hit · "+(r.property*100).toFixed(1)+"% property · "+(r.enemy*100).toFixed(1)+"% enemy RES";
+  $("#rightHits").textContent=r.hits;
+  $("#rightDamage").textContent=fmt(r.damage);
+
+  $("#gearHpFlat").textContent=fmt(r.t.HP||0);
+  $("#gearAtkLabel").textContent=r.atkKey;
+  $("#gearAtkFlat").textContent=fmt(r.t[r.atkKey]||0);
+  $("#gearDef").textContent=pct(r.t.DEF||0);
+  $("#gearAtkPctLabel").textContent=atkPct;
+  $("#gearAtkPct").textContent=pct(r.t[atkPct]||0);
+  $("#gearCdmg").textContent=pct(r.t.CDMG||0);
+  $("#detailHpPct").textContent=pct(r.t["HP%"]||0);
+  $("#detailCr").textContent=pct(r.t.CR||0);
+  $("#detailProperty").textContent=pct(r.property);
+
+  document.querySelectorAll(".gearCard").forEach(function(card){
+    const slot=card.dataset.slot,g=gearState[slot],ex=exValueFor(c,g.tier,slot);
+    card.querySelector(".gearTier").classList.toggle("exclusiveTier",!!ex);
+    card.querySelector(".exMark").textContent=ex?"EX":"";
+    const exBox=card.querySelector(".exclusiveValue");
+    exBox.innerHTML=ex?("<span>"+ex.stat+"</span><b>"+displayStat(ex.stat,ex.value)+"</b>"):"<span>-</span><b>-</b>";
   });
+
   const breakdown=[
-    ["HP",r.hp], [r.atkKey,r.atk], ["Crit Rate",pct(r.cr)],["Crit DMG",pct(r.cdmg)],
-    ["DEF",pct(r.def)],["MRES",pct(r.mres)],["Property DMG",pct(r.property)],
-    ["Flat "+r.atkKey,fmt(r.t[r.atkKey]||0)],[r.atkKey+"%",pct(r.t[r.atkKey+"%"]||0)],
-    ["Gear HP",fmt(r.t.HP||0)],["Gear HP%",pct(r.t["HP%"]||0)],["Gear CDMG",pct(r.t.CDMG||0)]
+    ["Final HP",fmt(r.hp)],["Final "+r.atkKey,fmt(r.atk)],["Crit Rate",pct(r.cr)],["Crit DMG",pct(r.cdmg)],
+    ["DEF",pct(r.def)],["MRES",pct(r.mres)],["Property",pct(r.property)],["Skill DMG",fmt(r.damage)]
   ];
-  $("#breakdown").innerHTML=breakdown.map(([k,v])=>`<article><span>${k}</span><strong>${v}</strong></article>`).join("");
+  $("#breakdown").innerHTML=breakdown.map(function(row){return "<article><span>"+row[0]+"</span><strong>"+row[1]+"</strong></article>";}).join("");
 }
 loadData();

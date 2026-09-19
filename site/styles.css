@@ -498,20 +498,25 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   letter-spacing:.08em;
 }
 .burstTable{
-  width:640px;
-  min-width:640px;
-  max-width:none
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  table-layout:fixed
 }
-.burstTable th:first-child{width:48px}
-.burstTable th:nth-child(2){width:42px}
+.burstTable th:first-child{width:58px}
 .burstTable .burstEffectCell{
   text-align:left;
   white-space:normal;
   line-height:1.25;
-  width:260px;
-  min-width:260px;
+  overflow-wrap:anywhere;
   overflow:visible;
   text-overflow:clip;
+  vertical-align:top
+}
+.burstTable .burstEffectRow td{
+  padding-top:6px;
+  padding-bottom:6px;
+  font-size:8px
 }
 
 .skillTitleRow strong,

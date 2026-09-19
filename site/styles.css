@@ -104,9 +104,35 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .buildSource{display:grid;gap:4px;align-content:end}
 .buildSource strong{height:28px;display:flex;align-items:center;justify-content:center;background:var(--cell-alt);border:1px solid var(--line);border-radius:5px;font-size:11px}
 
-.skillProgression{display:flex;flex-wrap:wrap;gap:4px;padding:0 7px 8px}
+.skillProgression{padding:0 7px 8px;overflow-x:auto}
 .skillVarChip{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line);background:var(--cell-alt);border-radius:10px;padding:2px 6px;font-size:9px}
 .skillVarChip b{font-size:10px}
+.upgradeTable{
+  width:100%;
+  min-width:560px;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:9px
+}
+.upgradeTable th,.upgradeTable td{
+  border:1px solid var(--line);
+  padding:4px 5px;
+  text-align:center;
+  white-space:nowrap
+}
+.upgradeTable thead th{
+  background:var(--header);
+  color:#fff;
+  font-size:9px
+}
+.upgradeTable tbody th{
+  background:var(--cell-alt);
+  text-align:left;
+  font-weight:800
+}
+.upgradeTable .damageRow td{font-weight:800}
+.upgradeTable .averageRow{background:color-mix(in srgb,var(--mint) 48%,var(--cell))}
+.upgradeTable .criticalRow{background:color-mix(in srgb,var(--cyan) 32%,var(--cell))}
 .progressionBox{border-top:1px solid var(--line-strong);padding:8px}
 .progressionHead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:7px}
 .progressionHead strong{font-size:11px}
@@ -288,15 +314,29 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .skillMain p{margin:0;padding:8px 7px;font-size:11px;line-height:1.35;flex:1}
 .skillOptions{
   min-height:28px;border-top:1px solid var(--line-strong);border-bottom:1px dotted var(--line);
-  display:grid;grid-template-columns:1fr 1fr 95px;align-items:center;font-size:11px
+  display:grid;grid-template-columns:1fr 110px;align-items:center;font-size:11px
 }
-.skillOptions label{text-align:center}
-.skillOptions span{text-align:center;font-weight:700;border-left:1px dotted var(--line)}
-.skillOptions input{accent-color:#555}
-.damageTotal{padding:8px;border-bottom:1px solid var(--line-strong);display:grid;grid-template-columns:auto 1fr;gap:4px 8px;align-items:center}
-.damageTotal span{font-size:11px;font-weight:700}
-.damageTotal strong{font-size:18px;text-align:right}
-.damageTotal small{grid-column:1/-1;font-size:9px;color:var(--muted)}
+.skillOptions span{text-align:center;font-weight:700}
+.skillOptions span+span{border-left:1px dotted var(--line)}
+.damageModes{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border-bottom:1px solid var(--line-strong)
+}
+.damageModes>div{
+  min-height:54px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  border-right:1px dotted var(--line)
+}
+.damageModes>div:last-child{border-right:0}
+.damageModes span{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
+.damageModes strong{font-size:16px}
+.damageExplainRow{padding:5px 8px;border-bottom:1px solid var(--line-strong)}
+.damageExplainRow small{display:block;font-size:9px;color:var(--muted);line-height:1.35}
 .skillFooter{
   min-height:22px;display:grid;grid-template-columns:70px 90px 1fr;align-items:center;font-size:11px
 }

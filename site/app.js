@@ -344,6 +344,7 @@ function setup(){
   const start=characters.some(function(c){return c.Name==="Tyr";})?"tyr":characters[0].__id;
   $("#character").value=start;
   fillProgressionSelects();
+  applyCharacterDefaultGearTiers();
   buildGearUI();
   wire();
   updateLevelOptions();
@@ -463,6 +464,19 @@ function syncExclusiveGearForSlot(slot){
 function syncAllExclusiveGear(){
   Object.keys(gearState).forEach(syncExclusiveGearForSlot);
 }
+function applyCharacterDefaultGearTiers(){
+  const c=getChar();
+  Object.keys(gearState).forEach(function(slot){
+    const g=gearState[slot];
+    g.tier="UR4";
+    g.catalogId="";
+    g.autoExclusive=false;
+  });
+  if(c&&c.EXSLOT&&hasExclusiveForTier(c,c.EXSLOT,"EX UR")){
+    gearState[c.EXSLOT].tier="EX UR";
+  }
+  syncAllExclusiveGear();
+}
 
 function applyCatalogGear(slot,id){
   const g=gearState[slot];
@@ -553,8 +567,8 @@ function updateCostumeOptions(){
     el.value=preferred?preferred.id:"__basic__";
   }
   updateCatalogCount();
-  syncCalculationMode();
   updateBurstOptions();
+  syncCalculationMode();
 }
 function syncCalculationMode(){
   const basic=isBasicAttack();
@@ -570,7 +584,7 @@ function updateBurstOptions(){
   if(!rows.length)el.value="0";
 }
 function resetBuild(){
-  gearState=clone(DEFAULT_GEAR);syncAllExclusiveGear();buildGearUI();
+  gearState=clone(DEFAULT_GEAR);applyCharacterDefaultGearTiers();buildGearUI();
   const defaults={collectionAtk:80,collectionHp:80,externalAtk:0,externalCr:0,externalCdmg:0,externalEle:0,skillMult:100,hits:1,chains:0,chainBuff:0,enemyRes:0,dmgMult:1,enemyHp:30000,enemyAtk:1000};
   Object.keys(defaults).forEach(function(id){const el=$("#"+id);if(el)el.value=defaults[id];});
   ["engraveLife","engraveStrength","engravePerseverance"].forEach(function(id){if($("#"+id))$("#"+id).value="10";});
@@ -606,12 +620,13 @@ function wire(){
     if(e.target.id==="character"){
       updateLevelOptions();
       updateCostumeOptions();
-      syncAllExclusiveGear();
+      applyCharacterDefaultGearTiers();
       buildGearUI();
       render();
       return;
     }
-    if(e.target.id==="costume"){syncCalculationMode();updateBurstOptions();render();return;}
+    if(e.target.id==="costume"){updateBurstOptions();syncCalculationMode();render();return;}
+    if(e.target.id==="burst"){syncCostumeUpgradeToCalculator();render();return;}
     if(e.target.id==="dupe"){syncCostumeUpgradeToCalculator();render();return;}
     render();
   }
@@ -867,6 +882,21 @@ function replaceUpgradeValuesInDescription(costume,vars,dupe){
   });
   return text;
 }
+function selectedBurstForCostume(costume){
+  if(!costume||costume.is_basic_attack)return null;
+  const stage=Number($("#burst").value)||0;
+  if(!stage)return null;
+  return costumeBursts.find(function(x){
+    return x.costume_id===costume.id&&Number(x.stage)===stage;
+  })||null;
+}
+function burstPrimaryBonus(burst,primary){
+  if(!burst||!primary||!burst.effects)return 0;
+  const target=String(burst.effects.target||"");
+  if(target!=="VALUE"+Number(primary.variable_index))return 0;
+  const value=Number(burst.effects.value);
+  return Number.isFinite(value)?value:0;
+}
 function syncCostumeUpgradeToCalculator(){
   const costume=getCostume();
   if(!costume||costume.is_basic_attack){
@@ -879,8 +909,12 @@ function syncCostumeUpgradeToCalculator(){
   const primary=primaryDamageVariable(vars);
   if(primary){
     const value=effectiveVariableValue(primary,dupe);
-    const p=percentNumber(value);
-    if(p!=null)$("#skillMult").value=String(p);
+    let p=percentNumber(value);
+    if(p==null)p=numericValue(value);
+    if(p!=null){
+      p+=burstPrimaryBonus(selectedBurstForCostume(costume),primary);
+      $("#skillMult").value=String(p);
+    }
   }
   $("#hits").value=String(inferCostumeHits(costume));
 }
@@ -931,6 +965,32 @@ function buildUpgradeTable(costume,r,allVars){
   html+="</tbody></table>";
   return html;
 }
+function buildBurstTable(costume,r,allVars){
+  const rows=costumeBursts.filter(function(x){return x.costume_id===costume.id;})
+    .sort(function(a,b){return Number(a.stage)-Number(b.stage);});
+  if(!rows.length)return "";
+  const primary=primaryDamageVariable(allVars);
+  const baseSummary=costumeUpgradeSummary(costume,allVars,5);
+  let basePct=percentNumber(baseSummary.damage);
+  if(basePct==null)basePct=numericValue(baseSummary.damage);
+  const hits=inferCostumeHits(costume);
+  let html='<table class="upgradeTable burstTable"><thead><tr><th>Burst</th><th>SP</th><th>Effect</th><th>Normal</th><th>Average</th><th>Critical</th></tr></thead><tbody>';
+  rows.forEach(function(burst){
+    const bonus=burstPrimaryBonus(burst,primary);
+    const canCalc=basePct!=null&&bonus!==0;
+    const dmg=canCalc?calculateDamageSet(r.atk,basePct+bonus,hits,r.cr,r.cdmg,r.property,r.enemy,r.dmgMult):null;
+    html+='<tr>'+
+      '<th>B'+escapeHtml(burst.stage)+'</th>'+
+      '<td>'+escapeHtml(burst.extra_sp==null?"—":burst.extra_sp)+'</td>'+
+      '<td class="burstEffectCell">'+escapeHtml(burst.effect_summary||"—")+'</td>'+
+      '<td>'+escapeHtml(dmg?fmt(dmg.normal):"—")+'</td>'+
+      '<td>'+escapeHtml(dmg?fmt(dmg.average):"—")+'</td>'+
+      '<td>'+escapeHtml(dmg?fmt(dmg.critical):"—")+'</td>'+
+      '</tr>';
+  });
+  html+='</tbody></table>';
+  return '<div class="burstTableWrap"><strong>Burst</strong>'+html+'</div>';
+}
 function updateCostumePanel(r){
   const costume=getCostume(),c=getChar();
   if(!costume){
@@ -959,13 +1019,14 @@ function updateCostumePanel(r){
   $("#skillTitle").textContent=costume.skill_name||costume.name;
   $("#skillDescription").textContent=replaceUpgradeValuesInDescription(costume,allVars,5)||"No description available.";
   $("#targetBadge").textContent=costume.target||c.TARGET||"Target";
-  $("#skillProgression").innerHTML=buildUpgradeTable(costume,r,allVars);
+  $("#skillProgression").innerHTML=buildUpgradeTable(costume,r,allVars)+buildBurstTable(costume,r,allVars);
 
   const burstStage=Number($("#burst").value)||0;
   const burst=costumeBursts.find(function(x){return x.costume_id===costume.id&&Number(x.stage)===burstStage;});
+  const burstRows=costumeBursts.filter(function(x){return x.costume_id===costume.id;});
   $("#burstInfo").textContent=burst
-    ? (("Burst "+burst.stage+" · +"+burst.extra_sp+" SP · ")+(burst.effect_summary||"Effect data loaded."))
-    : "No Burst selected or Burst data is not available yet.";
+    ? (("Burst "+burst.stage+" · SP "+burst.extra_sp+" · ")+(burst.effect_summary||"Effect data loaded."))
+    : (burstRows.length?"Burst available · choose a stage above or compare all stages in Skill.":"No Burst data for this costume.");
 }
 function render(){
   if(!characters.length)return;

@@ -556,8 +556,8 @@ function updateCostumeOptions(){
 }
 function syncCalculationMode(){
   const basic=isBasicAttack();
-  $("#dupe").disabled=basic;
-  if(basic)$("#dupe").value="0";
+  $("#dupe").disabled=true;
+  $("#dupe").value=basic?"0":"5";
   syncCostumeUpgradeToCalculator();
 }
 function updateBurstOptions(){
@@ -573,7 +573,7 @@ function resetBuild(){
   Object.keys(defaults).forEach(function(id){const el=$("#"+id);if(el)el.value=defaults[id];});
   ["engraveLife","engraveStrength","engravePerseverance"].forEach(function(id){if($("#"+id))$("#"+id).value="10";});
   ["awakening","potPermanent","potMinor1","potMinor2","potMajor1","potMajor2"].forEach(function(id){if($("#"+id))$("#"+id).checked=true;});
-  $("#dupe").value="5";$("#advantage").checked=true;$("#critical").checked=true;$("#expectedCrit").checked=false;
+  $("#dupe").value="5";$("#advantage").checked=true;
   updateLevelOptions();updateCostumeOptions();render();
 }
 function wire(){
@@ -692,6 +692,23 @@ function baseAtLevel(c,stat){
 function combineStats(a,b){
   const out={};ALL_STATS.forEach(function(s){out[s]=(a[s]||0)+(b[s]||0);});return out;
 }
+function calculateDamageSet(atk,skillPct,hits,cr,cdmg,property,enemy,dmgMult){
+  const skill=(Number(skillPct)||0)/100;
+  const hitCount=Math.max(1,Number(hits)||1);
+  const initial=Math.max(0,+$("#chains").value||0);
+  const advantageBonus=$("#advantage").checked?property:0;
+  const baseHit=atk*skill*(1+advantageBonus)*(1-enemy)*dmgMult;
+  const chainStep=.10+(+$("#chainBuff").value/100||0);
+  let normal=0;
+  for(let i=0;i<hitCount;i++)normal+=baseHit*(1+(initial+i)*chainStep);
+  const critChance=Math.min(1,Math.max(0,Number(cr)||0));
+  return {
+    baseHit:baseHit,
+    normal:normal,
+    average:normal*(1+critChance*(Number(cdmg)||0)),
+    critical:normal*(1+(Number(cdmg)||0))
+  };
+}
 function compute(){
   const c=getChar(),gear=gearStats(c),prog=progressionStats(c),t=combineStats(gear.total,prog);
   const atkKey=attackType(c)==="physical"?"ATK":"MATK",atkPct=atkKey+"%";
@@ -703,14 +720,15 @@ function compute(){
   const cdmg=(Number(c.CDMG)||0)+(t.CDMG||0)+extCdmg;
   const def=(Number(c.DEF)||0)+(t.DEF||0),mres=(Number(c.MRES)||0)+(t.MRES||0);
   const property=.5+(t["ELE%"]||0)+extEle;
-  const skill=+$("#skillMult").value/100,hits=Math.max(1,+$("#hits").value||1),initial=Math.max(0,+$("#chains").value||0);
+  const skillPct=+$("#skillMult").value||0,hits=Math.max(1,+$("#hits").value||1);
   const enemy=Math.min(.9,Math.max(-1,+$("#enemyRes").value/100||0)),dmgMult=Math.max(0,+$("#dmgMult").value||0);
-  let critFactor=1;if($("#expectedCrit").checked)critFactor=1+Math.min(1,Math.max(0,cr))*cdmg;else if($("#critical").checked)critFactor=1+cdmg;
-  const advantageBonus=$("#advantage").checked?property:0;
-  const baseHit=atk*skill*critFactor*(1+advantageBonus)*(1-enemy)*dmgMult;
-  const chainStep=.10+(+$("#chainBuff").value/100||0);
-  let damage=0;for(let i=0;i<hits;i++)damage+=baseHit*(1+(initial+i)*chainStep);
-  return {c:c,t:t,gearOnly:gear.total,progression:prog,atkKey:atkKey,atk:atk,hp:hp,cr:cr,cdmg:cdmg,def:def,mres:mres,property:property,hits:hits,enemy:enemy,baseHit:baseHit,damage:damage,gear:gear};
+  const damageSet=calculateDamageSet(atk,skillPct,hits,cr,cdmg,property,enemy,dmgMult);
+  return {
+    c:c,t:t,gearOnly:gear.total,progression:prog,atkKey:atkKey,atk:atk,hp:hp,cr:cr,cdmg:cdmg,
+    def:def,mres:mres,property:property,hits:hits,enemy:enemy,dmgMult:dmgMult,
+    baseHit:damageSet.baseHit,normalDamage:damageSet.normal,averageDamage:damageSet.average,
+    criticalDamage:damageSet.critical,damage:damageSet.average,gear:gear
+  };
 }
 function displayStat(k,v){
   if(!PERCENT_STATS.has(k))return fmt(v);
@@ -869,44 +887,83 @@ function currentDupeValue(obj,dupe){
   if(!obj||typeof obj!=="object")return null;
   return obj[String(dupe)]!=null?obj[String(dupe)]:obj[dupe]!=null?obj[dupe]:null;
 }
+function escapeHtml(value){
+  return String(value==null?"—":value)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+function buildUpgradeTable(costume,r,allVars){
+  const primary=primaryDamageVariable(allVars);
+  const effectVars=allVars.filter(function(v){
+    if(primary&&Number(primary.variable_index)===Number(v.variable_index))return false;
+    return (v.dupe_values&&Object.keys(v.dupe_values).length)||/\$C\$4/i.test(v.formula||"");
+  }).slice(0,4);
+  const levels=[1,2,3,4,5];
+  const hits=inferCostumeHits(costume);
+  const cols=levels.map(function(dupe){
+    const summary=costumeUpgradeSummary(costume,allVars,dupe);
+    let skillPct=percentNumber(summary.damage);
+    if(skillPct==null)skillPct=numericValue(summary.damage);
+    const damages=skillPct==null?null:calculateDamageSet(
+      r.atk,skillPct,hits,r.cr,r.cdmg,r.property,r.enemy,r.dmgMult
+    );
+    return {dupe:dupe,summary:summary,skillPct:skillPct,damages:damages};
+  });
+  const row=function(label,values,className){
+    return '<tr class="'+(className||"")+'"><th>'+escapeHtml(label)+'</th>'+
+      values.map(function(v){return '<td>'+escapeHtml(v)+'</td>';}).join("")+'</tr>';
+  };
+  let html='<table class="upgradeTable"><thead><tr><th>Upgrade</th>'+
+    levels.map(function(x){return '<th>+'+x+'</th>';}).join("")+'</tr></thead><tbody>';
+  html+=row("SP",cols.map(function(x){return x.summary.sp==null?"—":x.summary.sp;}));
+  html+=row("CD",cols.map(function(x){return x.summary.cd==null?"—":x.summary.cd+"T";}));
+  html+=row("Skill %",cols.map(function(x){return x.summary.damage==null?"—":x.summary.damage;}));
+  effectVars.forEach(function(v,i){
+    html+=row("Effect "+(i+1),levels.map(function(dupe){
+      return effectiveVariableValue(v,dupe)||v.displayed_value||"—";
+    }));
+  });
+  html+=row("Normal",cols.map(function(x){return x.damages?fmt(x.damages.normal):"—";}),"damageRow normalRow");
+  html+=row("Average",cols.map(function(x){return x.damages?fmt(x.damages.average):"—";}),"damageRow averageRow");
+  html+=row("Critical",cols.map(function(x){return x.damages?fmt(x.damages.critical):"—";}),"damageRow criticalRow");
+  html+="</tbody></table>";
+  return html;
+}
 function updateCostumePanel(r){
-  const costume=getCostume(),c=getChar(),dupe=Number($("#dupe").value)||0;
+  const costume=getCostume(),c=getChar();
   if(!costume){
-    $("#skillTitle").textContent="Damage Test";$("#skillDescription").textContent="No costume data loaded for this character.";$("#skillProgression").innerHTML="";$("#burstInfo").textContent="No Burst data for this costume.";return;
+    $("#skillTitle").textContent="Damage Test";
+    $("#skillDescription").textContent="No costume data loaded for this character.";
+    $("#skillProgression").innerHTML="";
+    $("#burstInfo").textContent="No Burst data for this costume.";
+    return;
   }
   if(costume.is_basic_attack){
     const type=r.atkKey==="ATK"?"Physical":"Magic";
     $("#skillTitle").textContent="Basic Attack";
-    $("#skillDescription").textContent="Deal "+fmt(r.baseHit)+" "+type+" Damage based off of 100% of "+r.atkKey+". Gain 1 SP.";
+    $("#skillDescription").textContent="Deal damage based on 100% of "+r.atkKey+". Gain 1 SP.";
     $("#targetBadge").textContent=c.TARGET==="Vault"?"Vault":"Very Front";
-    $("#skillProgression").innerHTML='<span class="skillVarChip"><span>Multiplier</span><b>100%</b></span><span class="skillVarChip"><span>SP Gain</span><b>1</b></span>';
-    $("#burstInfo").textContent="Basic Attack has no costume upgrade, potential, or Burst stage.";
+    $("#skillProgression").innerHTML=
+      '<table class="upgradeTable basicDamageTable"><thead><tr><th>Basic Attack</th><th>Damage</th></tr></thead><tbody>'+
+      '<tr><th>Normal</th><td>'+fmt(r.normalDamage)+'</td></tr>'+
+      '<tr class="averageRow"><th>Average</th><td>'+fmt(r.averageDamage)+'</td></tr>'+
+      '<tr class="criticalRow"><th>Critical</th><td>'+fmt(r.criticalDamage)+'</td></tr>'+
+      '</tbody></table>';
+    $("#burstInfo").textContent="Basic Attack has no costume upgrade or Burst stage.";
     return;
   }
-  $("#skillTitle").textContent=(costume.skill_name||costume.name)+" · +"+dupe;
+
   const allVars=costumeVariables.filter(function(x){return x.costume_id===costume.id;});
-  $("#skillDescription").textContent=replaceUpgradeValuesInDescription(costume,allVars,dupe)||"No description available.";
+  $("#skillTitle").textContent=costume.skill_name||costume.name;
+  $("#skillDescription").textContent=replaceUpgradeValuesInDescription(costume,allVars,5)||"No description available.";
   $("#targetBadge").textContent=costume.target||c.TARGET||"Target";
-  const vars=allVars.filter(function(x){
-    return (x.dupe_values&&Object.keys(x.dupe_values).length)||/$C$4/i.test(x.formula||"");
-  });
-  const summary=costumeUpgradeSummary(costume,allVars,dupe);
-  const primary=summary.primary;
-  const summaryChips=[
-    '<span class="skillVarChip"><span>SP</span><b>'+summary.sp+'</b></span>',
-    '<span class="skillVarChip"><span>CD</span><b>'+summary.cd+'T</b></span>'
-  ];
-  if(summary.damage!=null)summaryChips.push('<span class="skillVarChip"><span>Damage</span><b>'+summary.damage+'</b></span>');
-  const effectChips=vars.filter(function(v){
-    return !(primary&&Number(primary.variable_index)===Number(v.variable_index));
-  }).slice(0,6).map(function(v,i){
-    const val=effectiveVariableValue(v,dupe)||v.displayed_value||"—";
-    return '<span class="skillVarChip"><span>Effect '+(i+1)+'</span><b>'+val+"</b></span>";
-  });
-  $("#skillProgression").innerHTML=summaryChips.concat(effectChips).join("");
+  $("#skillProgression").innerHTML=buildUpgradeTable(costume,r,allVars);
+
   const burstStage=Number($("#burst").value)||0;
   const burst=costumeBursts.find(function(x){return x.costume_id===costume.id&&Number(x.stage)===burstStage;});
-  $("#burstInfo").textContent=burst?(("Burst "+burst.stage+" · +"+burst.extra_sp+" SP · ")+(burst.effect_summary||"Effect data loaded.")):"No Burst selected or Burst data is not available yet.";
+  $("#burstInfo").textContent=burst
+    ? (("Burst "+burst.stage+" · +"+burst.extra_sp+" SP · ")+(burst.effect_summary||"Effect data loaded."))
+    : "No Burst selected or Burst data is not available yet.";
 }
 function render(){
   if(!characters.length)return;
@@ -931,8 +988,13 @@ function render(){
   $("#leftDef").textContent=pct(r.def);$("#leftMres").textContent=pct(r.mres);$("#elementDamageLabel").textContent=(c.ELE?c.ELE+" DMG":"Property DMG");$("#leftProperty").textContent=pct(r.property);
   $("#resistLabel").textContent=(c.RES||"Property")+" Resist";$("#leftResist").textContent=c.RES==="Property"?"0%":"50%";
 
-  $("#sumDamage").textContent=fmt(r.damage);$("#damageBig").textContent=fmt(r.damage);$("#rightHits").textContent=r.hits;$("#rightDamage").textContent=fmt(r.damage);
-  $("#damageExplain").textContent=r.hits+" hit"+(r.hits===1?"":"s")+" · "+Math.round(r.baseHit).toLocaleString()+" base/hit · "+(r.property*100).toFixed(1)+"% property · "+(r.enemy*100).toFixed(1)+"% enemy RES";
+  $("#damageNormal").textContent=fmt(r.normalDamage);
+  $("#damageAverage").textContent=fmt(r.averageDamage);
+  $("#damageCritical").textContent=fmt(r.criticalDamage);
+  $("#sumDamage").textContent=fmt(r.averageDamage);
+  $("#rightHits").textContent=r.hits;
+  $("#rightDamage").textContent=fmt(r.averageDamage);
+  $("#damageExplain").textContent=r.hits+" hit"+(r.hits===1?"":"s")+" · "+Math.round(r.baseHit).toLocaleString()+" normal base/hit · "+(r.cr*100).toFixed(1)+"% CR · "+(r.property*100).toFixed(1)+"% property · "+(r.enemy*100).toFixed(1)+"% enemy RES";
 
   $("#gearHpFlat").textContent=fmt(r.t.HP||0);$("#gearAtkLabel").textContent=r.atkKey;$("#gearAtkFlat").textContent=fmt(r.t[r.atkKey]||0);$("#gearDef").textContent=pct(r.t.DEF||0);
   $("#gearAtkPctLabel").textContent=atkPct;$("#gearAtkPct").textContent=pct(r.t[atkPct]||0);$("#gearCdmg").textContent=pct(r.t.CDMG||0);$("#detailHpPct").textContent=pct(r.t["HP%"]||0);$("#detailCr").textContent=pct(r.t.CR||0);$("#detailProperty").textContent=pct(r.property);
@@ -952,7 +1014,7 @@ function render(){
 
   const breakdown=[
     ["Final HP",fmt(r.hp)],["Final "+r.atkKey,fmt(r.atk)],["Crit Rate",pct(r.cr)],["Crit DMG",pct(r.cdmg)],
-    ["DEF",pct(r.def)],["MRES",pct(r.mres)],["Property",pct(r.property)],["Skill Test",fmt(r.damage)]
+    ["DEF",pct(r.def)],["MRES",pct(r.mres)],["Property",pct(r.property)],["Avg Skill",fmt(r.averageDamage)]
   ];
   $("#breakdown").innerHTML=breakdown.map(function(row){return "<article><span>"+row[0]+"</span><strong>"+row[1]+"</strong></article>";}).join("");
   updateCostumePanel(r);

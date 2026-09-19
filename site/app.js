@@ -966,30 +966,75 @@ function buildUpgradeTable(costume,r,allVars){
   return html;
 }
 function buildBurstTable(costume,r,allVars){
-  const rows=costumeBursts.filter(function(x){return x.costume_id===costume.id;})
+  const bursts=costumeBursts.filter(function(x){return x.costume_id===costume.id;})
     .sort(function(a,b){return Number(a.stage)-Number(b.stage);});
-  if(!rows.length)return "";
+  if(!bursts.length)return "";
+
   const primary=primaryDamageVariable(allVars);
   const baseSummary=costumeUpgradeSummary(costume,allVars,5);
   let basePct=percentNumber(baseSummary.damage);
   if(basePct==null)basePct=numericValue(baseSummary.damage);
   const hits=inferCostumeHits(costume);
-  let html='<table class="upgradeTable burstTable"><thead><tr><th>Burst</th><th>SP</th><th>Effect</th><th>Normal</th><th>Average</th><th>Critical</th></tr></thead><tbody>';
-  rows.forEach(function(burst){
+
+  const stages=[1,2,3].map(function(stage){
+    const burst=bursts.find(function(x){return Number(x.stage)===stage;})||null;
+    if(!burst)return {stage:stage,burst:null,dmg:null};
     const bonus=burstPrimaryBonus(burst,primary);
     const canCalc=basePct!=null&&bonus!==0;
-    const dmg=canCalc?calculateDamageSet(r.atk,basePct+bonus,hits,r.cr,r.cdmg,r.property,r.enemy,r.dmgMult):null;
-    html+='<tr>'+
-      '<th>B'+escapeHtml(burst.stage)+'</th>'+
-      '<td>'+escapeHtml(burst.extra_sp==null?"—":burst.extra_sp)+'</td>'+
-      '<td class="burstEffectCell">'+escapeHtml(burst.effect_summary||"—")+'</td>'+
-      '<td>'+escapeHtml(dmg?fmt(dmg.normal):"—")+'</td>'+
-      '<td>'+escapeHtml(dmg?fmt(dmg.average):"—")+'</td>'+
-      '<td>'+escapeHtml(dmg?fmt(dmg.critical):"—")+'</td>'+
-      '</tr>';
+    const dmg=canCalc
+      ? calculateDamageSet(r.atk,basePct+bonus,hits,r.cr,r.cdmg,r.property,r.enemy,r.dmgMult)
+      : null;
+    return {stage:stage,burst:burst,dmg:dmg};
   });
-  html+='</tbody></table>';
-  return '<div class="burstTableWrap"><strong>Burst</strong>'+html+'</div>';
+
+  const cells=function(values,className){
+    return '<tr class="'+(className||"")+'">'+values.join("")+'</tr>';
+  };
+  const valueCell=function(value,className){
+    return '<td class="'+(className||"")+'">'+escapeHtml(value==null?"—":value)+'</td>';
+  };
+
+  let html='<div class="burstTableWrap"><strong>Burst</strong>'+
+    '<table class="upgradeTable burstTable"><thead><tr><th>Burst</th>'+
+    stages.map(function(x){return '<th>B'+x.stage+'</th>';}).join("")+
+    '</tr></thead><tbody>';
+
+  html+=cells(
+    ['<th>SP</th>'].concat(stages.map(function(x){
+      return valueCell(x.burst?x.burst.extra_sp:"—");
+    }))
+  );
+
+  html+=cells(
+    ['<th>Effect</th>'].concat(stages.map(function(x){
+      return valueCell(x.burst?(x.burst.effect_summary||"—"):"—","burstEffectCell");
+    })),
+    "burstEffectRow"
+  );
+
+  html+=cells(
+    ['<th>Normal</th>'].concat(stages.map(function(x){
+      return valueCell(x.dmg?fmt(x.dmg.normal):"—");
+    })),
+    "damageRow normalRow"
+  );
+
+  html+=cells(
+    ['<th>Average</th>'].concat(stages.map(function(x){
+      return valueCell(x.dmg?fmt(x.dmg.average):"—");
+    })),
+    "damageRow averageRow"
+  );
+
+  html+=cells(
+    ['<th>Critical</th>'].concat(stages.map(function(x){
+      return valueCell(x.dmg?fmt(x.dmg.critical):"—");
+    })),
+    "damageRow criticalRow"
+  );
+
+  html+='</tbody></table></div>';
+  return html;
 }
 function updateCostumePanel(r){
   const costume=getCostume(),c=getChar();

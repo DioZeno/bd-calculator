@@ -41,17 +41,14 @@
             <span>Costume / Calculation</span>
             <select id="costume" aria-label="Costume"></select>
           </label>
-          <label>
-            <span>Upgrade</span>
-            <select id="dupe" aria-label="Costume upgrade">
-              <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
-              <option value="3">+3</option><option value="4">+4</option><option value="5" selected>+5</option>
-            </select>
-          </label>
-          <label>
+          <label class="leftBuildWide">
             <span>Burst</span>
             <select id="burst" aria-label="Burst"><option value="0">None</option></select>
           </label>
+          <select id="dupe" hidden aria-hidden="true">
+            <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
+            <option value="3">+3</option><option value="4">+4</option><option value="5" selected>+5</option>
+          </select>
           <div class="leftCatalog">
             <span>Catalog</span>
             <strong id="catalogCount">—</strong>
@@ -111,17 +108,17 @@
               </div>
             </div>
             <div class="skillOptions">
-              <label><input id="critical" type="checkbox" checked> Critical</label>
-              <label><input id="expectedCrit" type="checkbox"> Expected Crit</label>
+              <span>Damage by Crit Outcome</span>
               <span id="charAttackType">—</span>
             </div>
-            <div class="damageTotal">
-              <span>Total DMG</span>
-              <strong id="damageBig">—</strong>
-              <small id="damageExplain">—</small>
+            <div class="damageModes">
+              <div><span>Normal</span><strong id="damageNormal">—</strong></div>
+              <div><span>Average</span><strong id="damageAverage">—</strong></div>
+              <div><span>Critical</span><strong id="damageCritical">—</strong></div>
             </div>
+            <div class="damageExplainRow"><small id="damageExplain">—</small></div>
             <div class="skillFooter">
-              <span>Total DMG</span>
+              <span>+5 Average</span>
               <b id="sumDamage">—</b>
               <span class="tag" id="charEx">—</span>
             </div>

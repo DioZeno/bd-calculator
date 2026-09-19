@@ -466,3 +466,21 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   background:var(--cell-alt);
 }
 .leftCatalog strong{font-size:10px}
+
+.burstTableWrap{margin-top:8px}
+.burstTableWrap>strong{
+  display:block;
+  margin-bottom:4px;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.burstTable{min-width:700px}
+.burstTable th:first-child{width:48px}
+.burstTable th:nth-child(2){width:42px}
+.burstTable .burstEffectCell{
+  text-align:left;
+  white-space:normal;
+  line-height:1.25;
+  min-width:240px;
+}

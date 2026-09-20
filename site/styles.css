@@ -301,14 +301,54 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   max-width:100%;
   overflow:hidden
 }
-.skillTop{display:grid;grid-template-columns:46px minmax(0,1fr);min-height:151px;min-width:0}
+.skillTop{display:grid;grid-template-columns:72px minmax(0,1fr);min-height:151px;min-width:0}
 .portraitPlaceholder{
+  position:relative;
+  overflow:hidden;
+  min-width:0;
   background:linear-gradient(160deg,#1c2730,#384b53 55%,#182125);
-  color:#fff;border-right:1px solid var(--line-strong);
-  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;
+  color:#fff;
+  border-right:1px solid var(--line-strong);
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
-.portraitPlaceholder>span{font-size:24px;font-weight:900;color:#d9f5e8}
-.portraitPlaceholder small{font-size:8px;text-transform:uppercase;writing-mode:vertical-rl;letter-spacing:.08em}
+.costumePortrait{
+  position:absolute;
+  inset:0 0 24px 0;
+  width:100%;
+  height:calc(100% - 24px);
+  object-fit:cover;
+  object-position:center 18%;
+  opacity:0;
+  transition:opacity .15s ease;
+  background:#222;
+}
+.portraitPlaceholder.hasPortrait .costumePortrait{opacity:1}
+.portraitPlaceholder>span{
+  position:relative;
+  z-index:1;
+  font-size:24px;
+  font-weight:900;
+  color:#d9f5e8
+}
+.portraitPlaceholder.hasPortrait>span{opacity:0}
+.portraitPlaceholder small{
+  position:absolute;
+  z-index:2;
+  left:0;
+  right:0;
+  bottom:0;
+  height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(18,28,34,.92);
+  font-size:8px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  white-space:nowrap
+}
 .skillMain{display:flex;flex-direction:column;min-width:0;max-width:100%}
 .skillTitleRow{
   display:grid;grid-template-columns:1fr 100px;min-height:45px;border-bottom:1px dotted var(--line)
@@ -735,4 +775,15 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   object-fit:contain;
   display:block;
 }
-:root[data-theme="dark"] .skillPotentialIcon img{filter:invert(1)}
+:root[data-theme="dark"] .skillPotentialIcon img{filter:none}
+
+.skillPotentialIcon{
+  border:1px solid var(--line);
+  background:var(--cell-alt);
+  border-radius:2px;
+  overflow:hidden;
+}
+.skillPotentialIcon img{
+  object-fit:contain;
+  background:transparent;
+}

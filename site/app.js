@@ -707,9 +707,9 @@ function updatePotentialSheet(){
   const rarity=Number(c.RARITY)||5;
 
   const prog=[
-    {stat:c.ENG_LIFE,value:progressionStatValue(c.ENG_LIFE,Number($("#engraveLife").value)||0),on:$("#engraveLifeOn").checked},
-    {stat:c.ENG_STR,value:progressionStatValue(c.ENG_STR,Number($("#engraveStrength").value)||0),on:$("#engraveStrengthOn").checked},
-    {stat:c.ENG_PSV,value:progressionStatValue(c.ENG_PSV,Number($("#engravePerseverance").value)||0),on:$("#engravePerseveranceOn").checked},
+    {stat:c.ENG_LIFE,value:progressionStatValue(c.ENG_LIFE,Number($("#engraveLife").value)||0),on:true},
+    {stat:c.ENG_STR,value:progressionStatValue(c.ENG_STR,Number($("#engraveStrength").value)||0),on:true},
+    {stat:c.ENG_PSV,value:progressionStatValue(c.ENG_PSV,Number($("#engravePerseverance").value)||0),on:true},
     {stat:c.AWA1,value:awakeningValues[c.AWA1]||0,on:$("#awakening1").checked},
     {stat:c.AWA2,value:awakeningValues[c.AWA2]||0,on:$("#awakening2").checked}
   ];
@@ -1018,7 +1018,7 @@ function resetBuild(){
   const defaults={collectionAtk:80,collectionHp:80,externalAtk:0,externalCr:0,externalCdmg:0,externalEle:0,skillMult:100,hits:1,chains:0,chainBuff:0,enemyRes:0,dmgMult:1,enemyHp:30000,enemyAtk:1000};
   Object.keys(defaults).forEach(function(id){const el=$("#"+id);if(el)el.value=defaults[id];});
   ["engraveLife","engraveStrength","engravePerseverance"].forEach(function(id){if($("#"+id))$("#"+id).value="10";});
-  ["engraveLifeOn","engraveStrengthOn","engravePerseveranceOn","awakening1","awakening2","skillPot1","skillPot2","skillPot3"].forEach(function(id){if($("#"+id))$("#"+id).checked=true;});
+  ["awakening1","awakening2","skillPot1","skillPot2","skillPot3"].forEach(function(id){if($("#"+id))$("#"+id).checked=true;});
   potentialCharacterId="";bondedCostumeId="";permanentPotentialLevels={};bondPotentialLevels={minor_1_stat:4,minor_2_stat:2,major_1_stat:2,major_2_stat:2};
   $("#dupe").value="5";$("#advantage").checked=true;
   updateLevelOptions();updateCostumeOptions();render();
@@ -1117,12 +1117,12 @@ function progressionStats(c){
   ensurePotentialState(c);
 
   const engravingPairs=[
-    [c.ENG_LIFE,Number($("#engraveLife").value)||0,$("#engraveLifeOn").checked],
-    [c.ENG_STR,Number($("#engraveStrength").value)||0,$("#engraveStrengthOn").checked],
-    [c.ENG_PSV,Number($("#engravePerseverance").value)||0,$("#engravePerseveranceOn").checked]
+    [c.ENG_LIFE,Number($("#engraveLife").value)||0],
+    [c.ENG_STR,Number($("#engraveStrength").value)||0],
+    [c.ENG_PSV,Number($("#engravePerseverance").value)||0]
   ];
   engravingPairs.forEach(function(x){
-    if(x[0]&&x[2])addStat(out,x[0],progressionStatValue(x[0],x[1]));
+    if(x[0]&&x[1]>0)addStat(out,x[0],progressionStatValue(x[0],x[1]));
   });
 
   if($("#awakening1").checked&&c.AWA1)addStat(out,c.AWA1,awakeningValues[c.AWA1]||0);

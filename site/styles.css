@@ -301,7 +301,7 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   max-width:100%;
   overflow:hidden
 }
-.skillTop{display:grid;grid-template-columns:72px minmax(0,1fr);min-height:151px;min-width:0}
+.skillTop{display:grid;grid-template-columns:minmax(0,1fr);min-height:151px;min-width:0}
 .portraitPlaceholder{
   position:relative;
   overflow:hidden;
@@ -315,9 +315,9 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 }
 .costumePortrait{
   position:absolute;
-  inset:0 0 24px 0;
+  inset:0;
   width:100%;
-  height:calc(100% - 24px);
+  height:100%;
   object-fit:cover;
   object-position:center 18%;
   opacity:0;
@@ -786,4 +786,20 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .skillPotentialIcon img{
   object-fit:contain;
   background:transparent;
+}
+
+.leftPortrait{
+  width:100%;
+  aspect-ratio:1 / 1;
+  min-height:0;
+  border-right:0;
+  border-bottom:1px solid var(--line-strong);
+}
+.leftPortrait .costumePortrait{
+  object-position:center 15%;
+}
+.leftPortrait small{
+  background:linear-gradient(transparent,rgba(18,28,34,.94));
+  height:34px;
+  padding-top:10px;
 }

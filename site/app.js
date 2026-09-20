@@ -846,7 +846,7 @@ function findCostumeFromQuery(character,value){
   const q=selectionToken(raw);
   const compact=q.replace(/-/g,"");
   if(q==="basic"||q==="basic-attack")return {id:"__basic__"};
-  const prefix=selectionToken(character.__id)+"--";
+  const prefix=selectionToken(character.__id)+"-";
   return costumes.find(function(costume){
     if(costume.character_id!==character.__id||costume.is_basic_attack)return false;
     const id=selectionToken(costume.id);

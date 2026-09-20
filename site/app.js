@@ -1366,7 +1366,7 @@ function buildUpgradeDamageComparison(costume,r,allVars){
   if(costume.is_basic_attack){
     wrap.innerHTML='<table class="upgradeDamageMiniTable"><thead><tr><th>Upgrade</th><th>Basic</th></tr></thead><tbody>'+
       '<tr><th>Avg DMG</th><td>'+fmt(r.averageDamage)+'</td></tr>'+
-      '<tr><th>Δ Previous</th><td>—</td></tr></tbody></table>';
+      '<tr><th>Gain vs Prev</th><td>—</td></tr></tbody></table>';
     review.textContent="Basic Attack has no costume upgrade progression.";
     return;
   }
@@ -1385,14 +1385,18 @@ function buildUpgradeDamageComparison(costume,r,allVars){
     if(i===0||v==null||values[i-1]==null)return null;
     return v-values[i-1];
   });
+  const deltaPcts=values.map(function(v,i){
+    if(i===0||v==null||values[i-1]==null||values[i-1]===0)return null;
+    return (v-values[i-1])/values[i-1]*100;
+  });
 
   const cell=function(v){
     return v==null?"—":fmt(v);
   };
-  const deltaCell=function(v){
+  const pctCell=function(v){
     if(v==null)return "—";
     const sign=v>0?"+":"";
-    return sign+fmt(v);
+    return sign+v.toFixed(1)+"%";
   };
 
   wrap.innerHTML=
@@ -1400,8 +1404,8 @@ function buildUpgradeDamageComparison(costume,r,allVars){
     levels.map(function(x){return '<th>+'+x+'</th>';}).join("")+
     '</tr></thead><tbody>'+
     '<tr><th>Avg DMG</th>'+values.map(function(v){return '<td>'+cell(v)+'</td>';}).join("")+'</tr>'+
-    '<tr class="upgradeDeltaRow"><th>Δ Previous</th>'+
-      deltas.map(function(v,i){return '<td>'+(i===0?"Base":deltaCell(v))+'</td>';}).join("")+
+    '<tr class="upgradeDeltaRow"><th>Gain vs Prev</th>'+
+      deltaPcts.map(function(v,i){return '<td>'+(i===0?"Base":pctCell(v))+'</td>';}).join("")+
     '</tr></tbody></table>';
 
   const base=values[0],max=values[5];
@@ -1412,17 +1416,15 @@ function buildUpgradeDamageComparison(costume,r,allVars){
 
   const total=max-base;
   const totalPct=base?total/base*100:0;
-  let bestIndex=-1,bestDelta=-Infinity;
-  deltas.forEach(function(v,i){
-    if(v!=null&&v>bestDelta){bestDelta=v;bestIndex=i;}
+  let bestIndex=-1,bestPct=-Infinity;
+  deltaPcts.forEach(function(v,i){
+    if(v!=null&&v>bestPct){bestPct=v;bestIndex=i;}
   });
 
   const totalText=(total>=0?"+":"")+fmt(total)+" ("+(totalPct>=0?"+":"")+totalPct.toFixed(1)+"%)";
-  if(bestIndex>0&&bestDelta>0){
-    const prev=values[bestIndex-1];
-    const stepPct=prev?bestDelta/prev*100:0;
-    review.textContent="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · Biggest jump: +"+
-      (bestIndex-1)+"→+"+bestIndex+" "+deltaCell(bestDelta)+" ("+(stepPct>=0?"+":"")+stepPct.toFixed(1)+"%).";
+  if(bestIndex>0&&bestPct>0){
+    review.textContent="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · Biggest step gain: +"+
+      (bestIndex-1)+"→+"+bestIndex+" "+pctCell(bestPct)+".";
   }else{
     review.textContent="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · No damage-increasing upgrade step detected.";
   }

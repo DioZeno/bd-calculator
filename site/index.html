@@ -41,8 +41,12 @@
           <span id="rarityBadge" class="stars"></span>
         </div>
 
-        <div class="portraitPlaceholder leftPortrait" id="portraitBox">
-          <img id="costumePortrait" class="costumePortrait" alt="" loading="lazy" referrerpolicy="no-referrer">
+        <div class="portraitPlaceholder leftPortrait noPortrait" id="portraitBox">
+          <img id="costumePortrait" class="costumePortrait" alt="" referrerpolicy="no-referrer">
+          <div id="portraitStatus" class="portraitStatus" aria-live="polite">
+            <span class="portraitSpinner" aria-hidden="true"></span>
+            <b>No image available</b>
+          </div>
           <span id="portraitInitial">?</span>
           <small id="portraitElement">Element</small>
         </div>
@@ -56,10 +60,6 @@
               <div id="costumeSearchMenu" class="searchSelectMenu" role="listbox"></div>
               <select id="costume" class="nativeSearchSelect" aria-label="Costume"></select>
             </div>
-          </label>
-          <label class="leftBuildWide">
-            <span>Burst</span>
-            <select id="burst" aria-label="Burst"><option value="0">None</option></select>
           </label>
           <select id="dupe" hidden aria-hidden="true">
             <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>

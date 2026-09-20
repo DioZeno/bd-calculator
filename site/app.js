@@ -458,14 +458,15 @@ function showBlankSelectionState(){
   $("#costumePortrait").removeAttribute("src");
   $("#portraitInitial").textContent="?";
   $("#portraitElement").textContent="Choose";
-  ["sumHp","sumAtk","sumCr","sumCdmg","leftDef","leftMres","leftProperty","leftResist",
-   "damageNormal","damageAverage","damageCritical","sumDamage"].forEach(function(id){
+  ["sumHp","sumAtk","sumCr","sumCdmg","leftDef","leftMres","leftProperty","leftResist","sumDamage"].forEach(function(id){
     const el=$("#"+id);if(el)el.textContent="—";
   });
   $("#skillTitle").textContent="Select a character";
   $("#skillDescription").textContent="Search for a character above to begin.";
   $("#skillProgression").innerHTML="";
   $("#targetBadge").textContent="—";
+  if($("#upgradeDamageComparison"))$("#upgradeDamageComparison").innerHTML='<div class="upgradeDamageEmpty">Select a costume to compare +0 to +5.</div>';
+  if($("#damageReview"))$("#damageReview").textContent="—";
 }
 function characterElementClass(value){
   const v=String(value||"").toLowerCase();
@@ -1352,6 +1353,80 @@ function escapeHtml(value){
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
+function buildUpgradeDamageComparison(costume,r,allVars){
+  const wrap=$("#upgradeDamageComparison"),review=$("#damageReview");
+  if(!wrap||!review)return;
+
+  if(!costume){
+    wrap.innerHTML='<div class="upgradeDamageEmpty">Select a costume to compare +0 to +5.</div>';
+    review.textContent="—";
+    return;
+  }
+
+  if(costume.is_basic_attack){
+    wrap.innerHTML='<table class="upgradeDamageMiniTable"><thead><tr><th>Upgrade</th><th>Basic</th></tr></thead><tbody>'+
+      '<tr><th>Avg DMG</th><td>'+fmt(r.averageDamage)+'</td></tr>'+
+      '<tr><th>Δ Previous</th><td>—</td></tr></tbody></table>';
+    review.textContent="Basic Attack has no costume upgrade progression.";
+    return;
+  }
+
+  const levels=[0,1,2,3,4,5];
+  const hits=inferCostumeHits(costume);
+  const values=levels.map(function(dupe){
+    const summary=costumeUpgradeSummary(costume,allVars,dupe);
+    let skillPct=percentNumber(summary.damage);
+    if(skillPct==null)skillPct=numericValue(summary.damage);
+    if(skillPct==null)return null;
+    return calculateDamageSet(r.atk,skillPct,hits,r.cr,r.cdmg,r.property,r.enemy,r.dmgMult).average;
+  });
+
+  const deltas=values.map(function(v,i){
+    if(i===0||v==null||values[i-1]==null)return null;
+    return v-values[i-1];
+  });
+
+  const cell=function(v){
+    return v==null?"—":fmt(v);
+  };
+  const deltaCell=function(v){
+    if(v==null)return "—";
+    const sign=v>0?"+":"";
+    return sign+fmt(v);
+  };
+
+  wrap.innerHTML=
+    '<table class="upgradeDamageMiniTable"><thead><tr><th>Upgrade</th>'+
+    levels.map(function(x){return '<th>+'+x+'</th>';}).join("")+
+    '</tr></thead><tbody>'+
+    '<tr><th>Avg DMG</th>'+values.map(function(v){return '<td>'+cell(v)+'</td>';}).join("")+'</tr>'+
+    '<tr class="upgradeDeltaRow"><th>Δ Previous</th>'+
+      deltas.map(function(v,i){return '<td>'+(i===0?"Base":deltaCell(v))+'</td>';}).join("")+
+    '</tr></tbody></table>';
+
+  const base=values[0],max=values[5];
+  if(base==null||max==null){
+    review.textContent="Damage comparison is unavailable for this costume's current skill formula.";
+    return;
+  }
+
+  const total=max-base;
+  const totalPct=base?total/base*100:0;
+  let bestIndex=-1,bestDelta=-Infinity;
+  deltas.forEach(function(v,i){
+    if(v!=null&&v>bestDelta){bestDelta=v;bestIndex=i;}
+  });
+
+  const totalText=(total>=0?"+":"")+fmt(total)+" ("+(totalPct>=0?"+":"")+totalPct.toFixed(1)+"%)";
+  if(bestIndex>0&&bestDelta>0){
+    const prev=values[bestIndex-1];
+    const stepPct=prev?bestDelta/prev*100:0;
+    review.textContent="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · Biggest jump: +"+
+      (bestIndex-1)+"→+"+bestIndex+" "+deltaCell(bestDelta)+" ("+(stepPct>=0?"+":"")+stepPct.toFixed(1)+"%).";
+  }else{
+    review.textContent="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · No damage-increasing upgrade step detected.";
+  }
+}
 function buildUpgradeTable(costume,r,allVars){
   const primary=primaryDamageVariable(allVars);
   const effectVars=allVars.filter(function(v){
@@ -1518,13 +1593,9 @@ function render(){
   $("#leftDef").textContent=pct(r.def);$("#leftMres").textContent=pct(r.mres);$("#elementDamageLabel").textContent=(c.ELE?c.ELE+" DMG":"Property DMG");$("#leftProperty").textContent=pct(r.property);
   $("#resistLabel").textContent=(c.RES||"Property")+" Resist";$("#leftResist").textContent=c.RES==="Property"?"0%":"50%";
 
-  $("#damageNormal").textContent=fmt(r.normalDamage);
-  $("#damageAverage").textContent=fmt(r.averageDamage);
-  $("#damageCritical").textContent=fmt(r.criticalDamage);
   $("#sumDamage").textContent=fmt(r.averageDamage);
   $("#rightHits").textContent=r.hits;
   $("#rightDamage").textContent=fmt(r.averageDamage);
-  $("#damageExplain").textContent=r.hits+" hit"+(r.hits===1?"":"s")+" · "+Math.round(r.baseHit).toLocaleString()+" normal base/hit · "+(r.cr*100).toFixed(1)+"% CR · "+(r.property*100).toFixed(1)+"% property · "+(r.enemy*100).toFixed(1)+"% enemy RES";
 
   $("#gearHpFlat").textContent=fmt(r.t.HP||0);$("#gearAtkLabel").textContent=r.atkKey;$("#gearAtkFlat").textContent=fmt(r.t[r.atkKey]||0);$("#gearDef").textContent=pct(r.t.DEF||0);
   $("#gearAtkPctLabel").textContent=atkPct;$("#gearAtkPct").textContent=pct(r.t[atkPct]||0);$("#gearCdmg").textContent=pct(r.t.CDMG||0);$("#detailHpPct").textContent=pct(r.t["HP%"]||0);$("#detailCr").textContent=pct(r.t.CR||0);$("#detailProperty").textContent=pct(r.property);
@@ -1548,5 +1619,10 @@ function render(){
   ];
   $("#breakdown").innerHTML=breakdown.map(function(row){return "<article><span>"+row[0]+"</span><strong>"+row[1]+"</strong></article>";}).join("");
   updateCostumePanel(r);
+  const activeCostume=getCostume();
+  const activeVars=activeCostume&&!activeCostume.is_basic_attack
+    ? costumeVariables.filter(function(x){return x.costume_id===activeCostume.id;})
+    : [];
+  buildUpgradeDamageComparison(activeCostume,r,activeVars);
 }
 loadData();

@@ -1480,8 +1480,8 @@ function buildUpgradeDamageComparison(costume,r,allVars){
     }
   }
   if(spDrops.length){
-    utilityNotes.push("SP "+spDrops.map(function(x){
-      return "improves at +"+x.level+": "+x.from+" → "+x.to+" (-"+x.drop+" SP)";
+    utilityNotes.push("SP: "+spDrops.map(function(x){
+      return x.from+" → "+x.to+" at +"+x.level+" (-"+x.drop+" SP)";
     }).join(", "));
   }
 
@@ -1514,12 +1514,12 @@ function buildUpgradeDamageComparison(costume,r,allVars){
   const totalText=(total>=0?"+":"")+fmt(total)+" ("+(totalPct>=0?"+":"")+totalPct.toFixed(1)+"%)";
   let damageReview;
   if(bestIndex>0&&bestPct>0){
-    damageReview="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · Biggest step gain: +"+
-      (bestIndex-1)+"→+"+bestIndex+" "+pctCell(bestPct);
+    damageReview="+0: "+fmt(base)+" → +5: "+fmt(max)+" | Total Gain: "+totalText+" | Biggest Step: +"+
+      (bestIndex-1)+"→+"+bestIndex+" ("+pctCell(bestPct)+")";
   }else{
-    damageReview="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · No damage-increasing upgrade step detected";
+    damageReview="+0: "+fmt(base)+" → +5: "+fmt(max)+" | Total Gain: "+totalText+" | No damage-increasing upgrade step detected";
   }
-  review.textContent=damageReview+(utilityNotes.length?" · "+utilityNotes.join(" · "):"")+".";
+  review.textContent=damageReview+(utilityNotes.length?" | "+utilityNotes.join(" | "):"")+".";
 }
 function buildUpgradeTable(costume,r,allVars){
   const primary=primaryDamageVariable(allVars);

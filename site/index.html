@@ -30,23 +30,16 @@
 
     <div class="calculatorGrid">
       <aside class="leftSheet sheetPanel">
-        <div class="characterHeader">
-          <span class="elementSigil" id="elementSigil"></span>
-          <div class="searchSelect" id="characterSearchWrap">
-            <input id="characterSearch" data-search-input="character" type="text" autocomplete="off"
-                   placeholder="Select character…" aria-label="Search character">
-            <div id="characterSearchMenu" class="searchSelectMenu" role="listbox"></div>
-            <select id="character" class="nativeSearchSelect" aria-label="Character"></select>
-          </div>
-          <span id="rarityBadge" class="stars"></span>
-        </div>
+        <select id="character" class="nativeSearchSelect" aria-label="Character"></select>
 
-        <div class="portraitPlaceholder leftPortrait noPortrait" id="portraitBox">
+        <div class="portraitPlaceholder leftPortrait chooseCharacter" id="portraitBox" role="button" tabindex="0"
+             aria-label="Choose character" title="Choose character">
           <img id="costumePortrait" class="costumePortrait" alt="" referrerpolicy="no-referrer">
           <div id="portraitStatus" class="portraitStatus" aria-live="polite">
             <span class="portraitSpinner" aria-hidden="true"></span>
             <b>No image available</b>
           </div>
+          <div class="portraitPickHint">Choose Character</div>
           <span id="portraitInitial">?</span>
           <small id="portraitElement">Element</small>
         </div>
@@ -240,5 +233,31 @@
     </footer>
   </main>
   <script src="./app.js"></script>
+
+  <div id="characterModal" class="characterModal" aria-hidden="true">
+    <div class="characterModalBackdrop" data-character-modal-close></div>
+    <section class="characterModalPanel" role="dialog" aria-modal="true" aria-labelledby="characterModalTitle">
+      <header class="characterModalHeader">
+        <div>
+          <strong id="characterModalTitle">Choose Character</strong>
+          <small>Search or filter the roster</small>
+        </div>
+        <button id="characterModalClose" type="button" aria-label="Close character picker">×</button>
+      </header>
+      <div class="characterModalTools">
+        <input id="characterModalSearch" type="search" autocomplete="off" placeholder="Search character…">
+        <div class="characterFilterGroup">
+          <span>Element</span>
+          <div id="characterElementFilters" class="characterFilterChips"></div>
+        </div>
+        <div class="characterFilterGroup">
+          <span>Rarity</span>
+          <div id="characterRarityFilters" class="characterFilterChips"></div>
+        </div>
+      </div>
+      <div id="characterCardGrid" class="characterCardGrid"></div>
+      <div id="characterModalEmpty" class="characterModalEmpty" hidden>No characters match these filters.</div>
+    </section>
+  </div>
 </body>
 </html>

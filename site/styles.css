@@ -3694,3 +3694,32 @@ textarea{
     width:calc(100% - 6px);
   }
 }
+
+
+/* Layout refinements */
+.choiceCard .leftPortrait{
+  width:100%;
+  max-width:none;
+  margin-left:0;
+  margin-right:0;
+}
+@media(min-width:1180px){
+  .choiceCard .leftPortrait{
+    width:100%;
+    max-width:none;
+    margin:0 0 5px;
+  }
+}
+.sheetShell{
+  width:min(1620px,calc(100% - 3px));
+}
+@media(min-width:1180px){
+  .sheetShell{
+    width:min(1620px,calc(100% - 2px));
+  }
+}
+@media(max-width:760px){
+  .sheetShell{
+    width:calc(100% - 3px);
+  }
+}

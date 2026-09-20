@@ -3578,3 +3578,88 @@ button:hover,.buttonLike:hover{
     grid-template-columns:226px minmax(0,1.8fr) minmax(310px,.68fr);
   }
 }
+
+/* Readable Damage panel typography */
+@media(min-width:1180px){
+  .damageGuide .guideHeader h2{
+    font-size:13px;
+  }
+  .damageGuide .guideHeader p{
+    font-size:9px;
+  }
+  .damageGuide .skillSheet{
+    font-size:9px;
+  }
+  .damageGuide .skillTitleRow{
+    min-height:29px;
+  }
+  .damageGuide .skillTitleRow strong{
+    font-size:12px;
+  }
+  .damageGuide .skillTitleRow span{
+    font-size:9px;
+  }
+  .damageGuide .skillMeta{
+    min-height:29px;
+  }
+  .damageGuide .skillMeta label{
+    font-size:9px;
+  }
+  .damageGuide .skillMeta input{
+    height:22px;
+    min-height:22px;
+    font-size:9px;
+  }
+  .damageGuide .skillMain p{
+    padding:5px 3px;
+    font-size:9px;
+    line-height:1.35;
+  }
+
+  .damageGuide .upgradeTable{
+    font-size:9px;
+  }
+  .damageGuide .upgradeTable thead th{
+    font-size:8px;
+  }
+  .damageGuide .upgradeTable th,
+  .damageGuide .upgradeTable td{
+    padding:4px 3px;
+    line-height:1.2;
+  }
+
+  .damageGuide .skillOptions{
+    min-height:27px;
+    font-size:9px;
+  }
+  .damageGuide .upgradeDamageMiniTable{
+    font-size:9px;
+  }
+  .damageGuide .upgradeDamageMiniTable th,
+  .damageGuide .upgradeDamageMiniTable td{
+    height:25px;
+    padding:3px 2px;
+    font-size:9px!important;
+  }
+
+  .damageGuide .damageReviewRow{
+    min-height:34px;
+    padding:5px 7px;
+  }
+  .damageGuide .damageReviewRow small{
+    font-size:9px;
+    line-height:1.35;
+  }
+
+  .damageGuide .skillFooter{
+    min-height:30px;
+    padding:0 7px;
+    font-size:9px;
+  }
+  .damageGuide .skillFooter b{
+    font-size:12px;
+  }
+  .damageGuide .skillFooter .tag{
+    font-size:8px;
+  }
+}

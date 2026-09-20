@@ -3663,3 +3663,15 @@ button:hover,.buttonLike:hover{
     font-size:8px;
   }
 }
+
+/* Global 12px typography */
+body *:not(.brandMark):not(.potentialGlyph):not(.characterCardFallback){
+  font-size:12px!important;
+}
+body,
+button,
+input,
+select,
+textarea{
+  font-size:12px!important;
+}

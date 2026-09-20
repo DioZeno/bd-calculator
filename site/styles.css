@@ -3999,3 +3999,53 @@ body{
 .damageReviewRow{
   background:var(--control-neutral);
 }
+
+
+/* Damage Review footer + readable potential controls */
+.damageReviewFooter{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center;
+  gap:8px;
+  min-height:34px;
+  padding:5px 8px;
+}
+.damageReviewFooter strong{
+  white-space:nowrap;
+  font-weight:800;
+}
+.damageReviewFooter small{
+  min-width:0;
+  font-size:11px!important;
+  line-height:1.35;
+  color:inherit;
+}
+
+/* Restore practical icon/checkbox sizing after compact pass */
+input[type="checkbox"]{
+  width:14px!important;
+  height:14px!important;
+  min-width:14px;
+  min-height:14px;
+  accent-color:#4f7f77;
+}
+.skillPotentialStrip label{
+  min-height:62px!important;
+  grid-template-rows:30px 18px 12px!important;
+}
+.skillPotentialIcon,
+.skillPotentialIcon img{
+  width:28px!important;
+  height:28px!important;
+}
+.skillPotentialStrip input[type="checkbox"]{
+  width:14px!important;
+  height:14px!important;
+}
+.potentialProgressControl{
+  grid-template-columns:18px minmax(0,1fr)!important;
+}
+.potentialProgressControl input[type="checkbox"]{
+  width:14px!important;
+  height:14px!important;
+}

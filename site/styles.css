@@ -3801,3 +3801,201 @@ body{
     margin-right:auto;
   }
 }
+
+
+/* Dashboard structure: right side flows independently from the tall Build column */
+.mainDashboard,
+.lowerDashboard{
+  min-width:0;
+}
+@media(max-width:1179px){
+  .mainDashboard,
+  .lowerDashboard{
+    display:contents;
+  }
+}
+@media(min-width:1180px){
+  .guidedLayout{
+    display:grid;
+    grid-template-columns:226px minmax(0,1fr);
+    grid-template-rows:auto;
+    gap:6px;
+    align-items:start;
+  }
+  .characterGuide{
+    grid-column:1;
+    grid-row:1;
+    min-width:0;
+  }
+  .mainDashboard{
+    grid-column:2;
+    grid-row:1;
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto;
+    gap:6px;
+    min-width:0;
+    align-items:start;
+  }
+  .mainDashboard .gearGuide{
+    grid-column:1;
+    grid-row:1;
+    min-width:0;
+  }
+  .lowerDashboard{
+    grid-column:1;
+    grid-row:2;
+    display:grid;
+    grid-template-columns:minmax(0,1.7fr) minmax(300px,.72fr);
+    gap:6px;
+    align-items:start;
+    min-width:0;
+  }
+  .lowerDashboard .damageGuide{
+    grid-column:1;
+    grid-row:1;
+    min-width:0;
+  }
+  .lowerDashboard .potentialGuide{
+    grid-column:2;
+    grid-row:1;
+    min-width:0;
+  }
+
+  .damageGuide .skillProgression{
+    max-height:none;
+    overflow:visible;
+  }
+  .damageGuide .upgradeDamageComparison{
+    max-width:none;
+    overflow:visible;
+  }
+  .damageGuide .upgradeTable,
+  .damageGuide .upgradeDamageMiniTable{
+    width:100%;
+    min-width:0;
+    table-layout:fixed;
+  }
+  .gearSheet{
+    overflow:visible;
+  }
+}
+@media(min-width:1450px){
+  .lowerDashboard{
+    grid-template-columns:minmax(0,1.82fr) minmax(310px,.68fr);
+  }
+}
+
+/* Muted game-dashboard color coding */
+:root{
+  --control-teal:#d8ebe6;
+  --control-blue:#dce8f3;
+  --control-gold:#efe4cb;
+  --control-violet:#e7e0ef;
+  --control-neutral:#e6ebef;
+  --control-green:#dcebdd;
+  --value-cell:#dbe4ea;
+  --table-head:#d7e3ec;
+  --table-label:#e1e7eb;
+}
+:root[data-theme="dark"]{
+  --control-teal:#203a38;
+  --control-blue:#213647;
+  --control-gold:#403821;
+  --control-violet:#342b42;
+  --control-neutral:#252f38;
+  --control-green:#243a2c;
+  --value-cell:#26333d;
+  --table-head:#273845;
+  --table-label:#222d36;
+}
+
+.gearName select{
+  background:var(--control-teal)!important;
+  border-color:color-mix(in srgb,var(--control-teal) 65%,var(--line-strong))!important;
+}
+.gearTier select,
+.gearTier:not(.exclusiveTier) select{
+  background:var(--control-blue)!important;
+  border-color:color-mix(in srgb,var(--control-blue) 62%,var(--line-strong))!important;
+}
+.refineGroup select,
+.refineGroup select:last-child{
+  background:var(--control-gold)!important;
+  border-color:color-mix(in srgb,var(--control-gold) 60%,var(--line-strong))!important;
+}
+.gearBasic select{
+  background:var(--control-neutral)!important;
+}
+.gearSub select{
+  background:var(--control-violet)!important;
+}
+.gearStatValue{
+  background:var(--value-cell)!important;
+}
+.exclusiveValue{
+  background:var(--control-green)!important;
+}
+
+.friendlyField input,
+.friendlyField select,
+.searchSelect>input,
+.cellInput input{
+  background:var(--control-neutral);
+}
+.resultStrip>div,
+.statRow{
+  background:var(--value-cell);
+}
+
+.potentialProgressCell:nth-child(1),
+.potentialProgressCell:nth-child(2){
+  background:var(--control-teal);
+}
+.potentialProgressCell:nth-child(3){
+  background:var(--control-blue);
+}
+.potentialProgressCell:nth-child(4){
+  background:var(--control-violet);
+}
+.potentialProgressCell:nth-child(5){
+  background:var(--control-gold);
+}
+.potentialProgressHead{
+  background:color-mix(in srgb,var(--cell-alt) 72%,transparent);
+}
+.potentialProgressControl select,
+.bondPotentialRow select,
+.permanentPotentialRow select,
+.bondedToRow select{
+  background:var(--control-blue);
+}
+.skillPotentialStrip label{
+  background:var(--control-neutral);
+}
+.bondPotentialRows,
+.permanentPotentialRows{
+  background:var(--cell-alt);
+}
+
+.upgradeTable thead th,
+.upgradeDamageMiniTable thead th{
+  background:var(--table-head)!important;
+}
+.upgradeTable tbody th,
+.upgradeDamageMiniTable tbody th{
+  background:var(--table-label)!important;
+}
+.upgradeTable .averageRow{
+  background:color-mix(in srgb,var(--control-green) 78%,var(--cell))!important;
+}
+.upgradeTable .criticalRow{
+  background:color-mix(in srgb,var(--control-blue) 80%,var(--cell))!important;
+}
+.upgradeDeltaRow td{
+  background:color-mix(in srgb,var(--control-gold) 55%,var(--cell));
+}
+.skillOptions,
+.damageReviewRow{
+  background:var(--control-neutral);
+}

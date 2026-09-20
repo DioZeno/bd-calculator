@@ -529,3 +529,189 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .damageModes>div{min-width:0}
 .skillFooter{min-width:0}
 .skillFooter>*{min-width:0}
+
+/* Original-style Potential Sheet */
+.potentialSheet{
+  min-width:0;
+  overflow:hidden;
+  font-size:10px;
+}
+.potentialProgressGrid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  border-bottom:1px solid var(--line-strong);
+}
+.potentialProgressCell{
+  min-width:0;
+  display:grid;
+  grid-template-rows:24px 22px 24px;
+  border-right:1px dotted var(--line);
+  background:var(--cell);
+  text-align:center;
+}
+.potentialProgressCell:last-child{border-right:0}
+.potentialProgressHead{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  border-bottom:1px dotted var(--line);
+  min-width:0;
+}
+.potentialProgressHead b{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+}
+.potentialGlyph{
+  width:18px;height:18px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--cell-alt);
+  border:1px solid var(--line);
+  font-size:11px;
+}
+.potentialProgressCell>strong{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+}
+.potentialProgressControl{
+  display:grid;
+  grid-template-columns:22px 1fr;
+  align-items:center;
+  justify-items:center;
+  border-top:1px dotted var(--line);
+  padding:1px 3px;
+}
+.potentialProgressControl input{
+  width:15px;height:15px;margin:0;accent-color:#555;
+}
+.potentialProgressControl select{
+  width:100%;
+  min-width:0;
+  height:19px;
+  border:0;
+  background:var(--input);
+  text-align:center;
+  font-size:9px;
+  font-weight:700;
+}
+.potentialProgressControl.awakeningCell{
+  grid-template-columns:1fr;
+}
+.potentialSkillHeader,
+.potentialMatrixHeaders strong{
+  background:var(--header);
+  color:var(--header-ink);
+  font-weight:800;
+  text-align:center;
+}
+.potentialSkillHeader{
+  height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-bottom:1px solid var(--line-strong);
+}
+.skillPotentialStrip{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border-bottom:1px solid var(--line-strong);
+}
+.skillPotentialStrip label{
+  min-height:34px;
+  display:grid;
+  grid-template-rows:17px 17px;
+  align-items:center;
+  justify-items:center;
+  border-right:1px dotted var(--line);
+}
+.skillPotentialStrip label:last-child{border-right:0}
+.skillPotentialStrip b{font-size:10px}
+.skillPotentialStrip input{width:15px;height:15px;margin:0;accent-color:#555}
+.potentialMatrixHeaders{
+  display:grid;
+  grid-template-columns:38% 62%;
+  border-bottom:1px solid var(--line-strong);
+}
+.potentialMatrixHeaders strong{
+  height:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.potentialMatrixHeaders strong:first-child{
+  border-right:1px solid var(--line-strong);
+}
+.potentialMatrix{
+  display:grid;
+  grid-template-columns:38% 62%;
+  min-height:104px;
+  border-bottom:1px solid var(--line-strong);
+}
+.bondPotentialRows{
+  border-right:1px solid var(--line-strong);
+}
+.bondPotentialRow{
+  min-height:25px;
+  display:grid;
+  grid-template-columns:minmax(44px,1fr) 58px 34px;
+  align-items:center;
+  border-bottom:1px dotted var(--line);
+}
+.bondPotentialRow:last-child{border-bottom:0}
+.bondPotentialRow b{padding-left:7px;font-size:10px}
+.bondPotentialRow span{text-align:center;font-weight:700}
+.bondPotentialRow select{
+  width:30px;height:19px;border:0;background:var(--input);
+  text-align:center;font-size:9px;font-weight:700;
+}
+.permanentPotentialRow{
+  min-height:25px;
+  display:grid;
+  grid-template-columns:minmax(92px,1.6fr) 48px 58px 34px;
+  align-items:center;
+  border-bottom:1px dotted var(--line);
+}
+.permanentPotentialRow:last-child{border-bottom:0}
+.permanentPotentialRow .costumeName{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  padding-left:5px;
+  font-weight:700;
+}
+.permanentPotentialRow .stat,
+.permanentPotentialRow .value{text-align:center;font-weight:700}
+.permanentPotentialRow select{
+  width:30px;height:19px;border:0;background:var(--input);
+  text-align:center;font-size:9px;font-weight:700;
+}
+.bondedToRow{
+  min-height:26px;
+  display:grid;
+  grid-template-columns:112px 1fr;
+  align-items:center;
+  background:var(--cell-alt);
+  border-top:1px solid var(--line-strong);
+}
+.bondedToRow strong{
+  padding-left:12px;
+  font-size:10px;
+}
+.bondedToRow select{
+  width:calc(100% - 10px);
+  min-width:0;
+  height:20px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--input);
+  font-size:10px;
+  font-weight:700;
+  padding:0 8px;
+}
+.legacyPotentialHidden{display:none!important}

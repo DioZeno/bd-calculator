@@ -3723,3 +3723,26 @@ textarea{
     width:calc(100% - 3px);
   }
 }
+
+
+/* Softer surfaces with less pure white */
+:root{
+  --page:#dde3e8;
+  --sheet:#edf1f4;
+  --cell:#f3f5f7;
+  --cell-alt:#e4e9ed;
+  --input:#f7f9fa;
+  --line:#cfd7de;
+  --line-strong:#bcc6cf;
+  --ink:#202832;
+  --muted:#65717d;
+}
+:root[data-theme="dark"]{
+  --page:#0c1116;
+  --sheet:#151c23;
+  --cell:#1b232c;
+  --cell-alt:#222c36;
+  --input:#11181f;
+  --line:#303b47;
+  --line-strong:#414d5a;
+}

@@ -137,7 +137,8 @@
         </details>
       </section>
 
-      <section class="guideSection gearGuide" aria-labelledby="step2Title">
+      <div class="mainDashboard">
+        <section class="guideSection gearGuide" aria-labelledby="step2Title">
         <header class="guideHeader">
           <div>
             <h2 id="step2Title">Gear</h2>
@@ -149,7 +150,46 @@
         </section>
       </section>
 
-      <section class="guideSection potentialGuide" aria-labelledby="step3Title">
+        <div class="lowerDashboard">
+          <section class="guideSection damageGuide" aria-labelledby="step4Title">
+        <header class="guideHeader">
+          <div>
+            <h2 id="step4Title">Damage</h2>
+            <p>Skill details, +0 to +5 comparison, Burst, SP savings, and upgrade summary.</p>
+          </div>
+        </header>
+        <section class="skillSheet sheetPanel">
+          <div class="skillTop">
+            <div class="skillMain">
+              <div class="skillTitleRow">
+                <strong id="skillTitle">Damage Test</strong>
+                <span id="targetBadge">Target</span>
+              </div>
+              <div class="skillMeta">
+                <label>Skill <input id="skillMult" type="number" step="1" value="100"><span>% ATK</span></label>
+                <label>Hits <input id="hits" type="number" min="1" max="30" value="1"></label>
+              </div>
+              <p id="skillDescription">Select a costume to view its skill and upgrade progression.</p>
+              <div id="skillProgression" class="skillProgression"></div>
+            </div>
+          </div>
+          <div class="skillOptions">
+            <span>Average Damage by Costume Upgrade</span>
+            <span id="charAttackType">—</span>
+          </div>
+          <div id="upgradeDamageComparison" class="upgradeDamageComparison">
+            <div class="upgradeDamageEmpty">Select a costume to compare +0 to +5.</div>
+          </div>
+          <div class="damageReviewRow"><small id="damageReview">—</small></div>
+          <div class="skillFooter">
+            <span>+5 Average Damage</span>
+            <b id="sumDamage">—</b>
+            <span class="tag" id="charEx">—</span>
+          </div>
+        </section>
+      </section>
+
+          <section class="guideSection potentialGuide" aria-labelledby="step3Title">
         <header class="guideHeader">
           <div>
             <h2 id="step3Title">Potentials</h2>
@@ -231,44 +271,8 @@
           </div>
         </section>
       </section>
-
-      <section class="guideSection damageGuide" aria-labelledby="step4Title">
-        <header class="guideHeader">
-          <div>
-            <h2 id="step4Title">Damage</h2>
-            <p>Skill details, +0 to +5 comparison, Burst, SP savings, and upgrade summary.</p>
-          </div>
-        </header>
-        <section class="skillSheet sheetPanel">
-          <div class="skillTop">
-            <div class="skillMain">
-              <div class="skillTitleRow">
-                <strong id="skillTitle">Damage Test</strong>
-                <span id="targetBadge">Target</span>
-              </div>
-              <div class="skillMeta">
-                <label>Skill <input id="skillMult" type="number" step="1" value="100"><span>% ATK</span></label>
-                <label>Hits <input id="hits" type="number" min="1" max="30" value="1"></label>
-              </div>
-              <p id="skillDescription">Select a costume to view its skill and upgrade progression.</p>
-              <div id="skillProgression" class="skillProgression"></div>
-            </div>
-          </div>
-          <div class="skillOptions">
-            <span>Average Damage by Costume Upgrade</span>
-            <span id="charAttackType">—</span>
-          </div>
-          <div id="upgradeDamageComparison" class="upgradeDamageComparison">
-            <div class="upgradeDamageEmpty">Select a costume to compare +0 to +5.</div>
-          </div>
-          <div class="damageReviewRow"><small id="damageReview">—</small></div>
-          <div class="skillFooter">
-            <span>+5 Average Damage</span>
-            <b id="sumDamage">—</b>
-            <span class="tag" id="charEx">—</span>
-          </div>
-        </section>
-      </section>
+        </div>
+      </div>
     </div>
 
     <footer class="sheetFooter">

@@ -411,8 +411,9 @@ function initSearchableSelect(id){
   if(!p.select||!p.input||!p.menu||!p.wrap)return;
   p.input.addEventListener("focus",function(){
     if(p.input.disabled)return;
-    renderSearchableMenu(id,p.input.value);
+    renderSearchableMenu(id,"");
     p.wrap.classList.add("open");
+    p.input.select();
   });
   p.input.addEventListener("input",function(){
     renderSearchableMenu(id,p.input.value);
@@ -876,6 +877,7 @@ function updateBurstOptions(){
   if(!rows.length)el.value="0";
 }
 function resetBuild(){
+  if(!getChar()){showBlankSelectionState();return;}
   gearState=clone(DEFAULT_GEAR);applyCharacterDefaultGearTiers();buildGearUI();
   const defaults={collectionAtk:80,collectionHp:80,externalAtk:0,externalCr:0,externalCdmg:0,externalEle:0,skillMult:100,hits:1,chains:0,chainBuff:0,enemyRes:0,dmgMult:1,enemyHp:30000,enemyAtk:1000};
   Object.keys(defaults).forEach(function(id){const el=$("#"+id);if(el)el.value=defaults[id];});

@@ -28,206 +28,256 @@
       </div>
     </div>
 
-    <div class="calculatorGrid">
-      <aside class="leftSheet sheetPanel">
-        <select id="character" class="nativeSearchSelect" aria-label="Character"></select>
-
-        <div class="portraitPlaceholder leftPortrait chooseCharacter" id="portraitBox" role="button" tabindex="0"
-             aria-label="Choose character" title="Choose character">
-          <img id="costumePortrait" class="costumePortrait" alt="" referrerpolicy="no-referrer">
-          <div id="portraitStatus" class="portraitStatus" aria-live="polite">
-            <span class="portraitSpinner" aria-hidden="true"></span>
-            <b>No image available</b>
+    <div class="guidedLayout">
+      <section class="guideSection characterGuide" aria-labelledby="step1Title">
+        <header class="guideHeader">
+          <span class="stepBadge">1</span>
+          <div>
+            <h2 id="step1Title">Choose your character and costume</h2>
+            <p>Start here. Click the portrait to choose a character, then choose the costume you want to calculate.</p>
           </div>
-          <div class="portraitPickHint">Choose Character</div>
-          <span id="portraitInitial">?</span>
-          <small id="portraitElement">Element</small>
+        </header>
+
+        <div class="overviewGrid">
+          <section class="choiceCard sheetPanel" aria-label="Character and costume">
+            <h3>Character &amp; Costume</h3>
+            <select id="character" class="nativeSearchSelect" aria-label="Character"></select>
+
+            <div class="portraitPlaceholder leftPortrait chooseCharacter" id="portraitBox" role="button" tabindex="0"
+                 aria-label="Choose character" title="Choose character">
+              <img id="costumePortrait" class="costumePortrait" alt="" referrerpolicy="no-referrer">
+              <div id="portraitStatus" class="portraitStatus" aria-live="polite">
+                <span class="portraitSpinner" aria-hidden="true"></span>
+                <b>No image available</b>
+              </div>
+              <div class="portraitPickHint">Choose Character</div>
+              <span id="portraitInitial">?</span>
+              <small id="portraitElement">Character</small>
+            </div>
+
+            <section class="leftBuildControls">
+              <label class="leftBuildWide">
+                <span>Costume</span>
+                <div class="searchSelect costumeSearchSelect" id="costumeSearchWrap">
+                  <input id="costumeSearch" data-search-input="costume" type="text" autocomplete="off"
+                         placeholder="Search or choose a costume…" aria-label="Search costume">
+                  <div id="costumeSearchMenu" class="searchSelectMenu" role="listbox"></div>
+                  <select id="costume" class="nativeSearchSelect" aria-label="Costume"></select>
+                </div>
+              </label>
+              <select id="dupe" hidden aria-hidden="true">
+                <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
+                <option value="3">+3</option><option value="4">+4</option><option value="5" selected>+5</option>
+              </select>
+              <div class="leftCatalog">
+                <span>Available costumes</span>
+                <strong id="catalogCount">—</strong>
+              </div>
+            </section>
+          </section>
+
+          <section class="statsCard sheetPanel" aria-labelledby="statsTitle">
+            <h3 id="statsTitle">Current Stats</h3>
+            <p class="sectionHint">These update automatically when you change gear, potentials, or bonuses.</p>
+            <section class="statTable">
+              <div class="statRow"><span>♥</span><b>HP</b><strong id="sumHp">—</strong></div>
+              <div class="statRow"><span>⚔</span><b id="sumAtkLabel">ATK</b><strong id="sumAtk">—</strong></div>
+              <div class="statRow"><span>◎</span><b>Crit Rate</b><strong id="sumCr">—</strong></div>
+              <div class="statRow"><span>✦</span><b>Crit DMG</b><strong id="sumCdmg">—</strong></div>
+              <div class="statRow"><span>◈</span><b>DEF</b><strong id="leftDef">—</strong></div>
+              <div class="statRow"><span>◉</span><b>Magic Resist</b><strong id="leftMres">—</strong></div>
+              <div class="statRow"><span>§</span><b id="elementDamageLabel">Property DMG</b><strong id="leftProperty">—</strong></div>
+              <div class="statRow"><span>◌</span><b id="resistLabel">Resistance</b><strong id="leftResist">—</strong></div>
+            </section>
+          </section>
+
+          <section class="settingsCard sheetPanel" aria-labelledby="settingsTitle">
+            <h3 id="settingsTitle">Build &amp; Enemy Settings</h3>
+            <p class="sectionHint">Use these only if you want a more specific damage result.</p>
+            <div class="settingsGrid">
+              <label class="friendlyField"><span>Character Level</span><select id="level"></select></label>
+              <label class="friendlyToggle"><input id="advantage" type="checkbox" checked><span>Element Advantage</span></label>
+              <label class="friendlyField"><span>Starting Chains</span><input id="chains" type="number" min="0" value="0"></label>
+              <label class="friendlyField"><span>Extra Chain Buff</span><span class="friendlyNumber"><input id="chainBuff" type="number" step="0.1" value="0"><em>%</em></span></label>
+
+              <div class="settingsDivider"><span>Enemy</span></div>
+              <label class="friendlyField"><span>Enemy HP</span><input id="enemyHp" type="number" value="30000"></label>
+              <label class="friendlyField"><span>Enemy ATK</span><input id="enemyAtk" type="number" value="1000"></label>
+              <label class="friendlyField"><span>Enemy RES</span><span class="friendlyNumber"><input id="enemyRes" type="number" step="0.1" value="0"><em>%</em></span></label>
+              <label class="friendlyField"><span>Damage Multiplier</span><input id="dmgMult" type="number" step="0.01" value="1"></label>
+            </div>
+            <div class="resultStrip">
+              <div><span>Hits</span><b id="rightHits">1</b></div>
+              <div><span>Current Avg. Damage</span><b id="rightDamage">—</b></div>
+            </div>
+            <button id="resetBtnMirror" class="largeSecondaryButton" type="button">Reset Build</button>
+          </section>
         </div>
 
-        <section class="leftBuildControls">
-          <label class="leftBuildWide">
-            <span>Costume / Calculation</span>
-            <div class="searchSelect costumeSearchSelect" id="costumeSearchWrap">
-              <input id="costumeSearch" data-search-input="costume" type="text" autocomplete="off"
-                     placeholder="Select costume…" aria-label="Search costume">
-              <div id="costumeSearchMenu" class="searchSelectMenu" role="listbox"></div>
-              <select id="costume" class="nativeSearchSelect" aria-label="Costume"></select>
-            </div>
-          </label>
-          <select id="dupe" hidden aria-hidden="true">
-            <option value="0">+0</option><option value="1">+1</option><option value="2">+2</option>
-            <option value="3">+3</option><option value="4">+4</option><option value="5" selected>+5</option>
-          </select>
-          <div class="leftCatalog">
-            <span>Catalog</span>
-            <strong id="catalogCount">—</strong>
+        <details class="bonusPanel sheetPanel">
+          <summary>
+            <span>Optional Bonuses</span>
+            <small>Collection bonuses and outside buffs</small>
+          </summary>
+          <div class="bonusGrid">
+            <section class="miniSection">
+              <h3>Collection Bonus</h3>
+              <label class="miniRow"><span>⚔</span><b>ATK / MATK</b><span class="cellInput"><input id="collectionAtk" type="number" step="1" value="80"><em>%</em></span></label>
+              <label class="miniRow"><span>♪</span><b>Magic ATK</b><span class="readOnlyCell">same</span></label>
+              <label class="miniRow"><span>♥</span><b>HP</b><span class="cellInput"><input id="collectionHp" type="number" step="1" value="80"><em>%</em></span></label>
+            </section>
+
+            <section class="miniSection">
+              <h3>External Buffs</h3>
+              <label class="miniRow"><span>⚔</span><b>ATK / MATK</b><span class="cellInput"><input id="externalAtk" type="number" step="1" value="0"><em>%</em></span></label>
+              <label class="miniRow"><span>◎</span><b>Crit Rate</b><span class="cellInput"><input id="externalCr" type="number" step="0.1" value="0"><em>%</em></span></label>
+              <label class="miniRow"><span>✦</span><b>Crit DMG</b><span class="cellInput"><input id="externalCdmg" type="number" step="0.1" value="0"><em>%</em></span></label>
+              <label class="miniRow"><span>§</span><b>Property DMG</b><span class="cellInput"><input id="externalEle" type="number" step="0.1" value="0"><em>%</em></span></label>
+            </section>
           </div>
-        </section>
+        </details>
+      </section>
 
-        <section class="statTable">
-          <div class="statRow"><span>♥</span><b>HP</b><strong id="sumHp">—</strong></div>
-          <div class="statRow"><span>⚔</span><b id="sumAtkLabel">ATK</b><strong id="sumAtk">—</strong></div>
-          <div class="statRow"><span>◎</span><b>Crit Rate</b><strong id="sumCr">—</strong></div>
-          <div class="statRow"><span>✦</span><b>Crit DMG</b><strong id="sumCdmg">—</strong></div>
-          <div class="statRow"><span>◈</span><b>DEF</b><strong id="leftDef">—</strong></div>
-          <div class="statRow"><span>◉</span><b>Magic Resist</b><strong id="leftMres">—</strong></div>
-          <div class="statRow"><span>§</span><b id="elementDamageLabel">Property DMG</b><strong id="leftProperty">—</strong></div>
-          <div class="statRow"><span>◌</span><b id="resistLabel">Resistance</b><strong id="leftResist">—</strong></div>
-        </section>
-
-        <section class="miniSection">
-          <h3>Collection Bonus</h3>
-          <label class="miniRow"><span>⚔</span><b>ATK / MATK</b><span class="cellInput"><input id="collectionAtk" type="number" step="1" value="80"><em>%</em></span></label>
-          <label class="miniRow"><span>♪</span><b>Magic ATK</b><span class="readOnlyCell">same</span></label>
-          <label class="miniRow"><span>♥</span><b>HP</b><span class="cellInput"><input id="collectionHp" type="number" step="1" value="80"><em>%</em></span></label>
-        </section>
-
-        <section class="miniSection">
-          <h3>External Buffs</h3>
-          <label class="miniRow"><span>⚔</span><b>ATK / MATK</b><span class="cellInput"><input id="externalAtk" type="number" step="1" value="0"><em>%</em></span></label>
-          <label class="miniRow"><span>◎</span><b>Crit Rate</b><span class="cellInput"><input id="externalCr" type="number" step="0.1" value="0"><em>%</em></span></label>
-          <label class="miniRow"><span>✦</span><b>Crit DMG</b><span class="cellInput"><input id="externalCdmg" type="number" step="0.1" value="0"><em>%</em></span></label>
-          <label class="miniRow"><span>§</span><b>Property DMG</b><span class="cellInput"><input id="externalEle" type="number" step="0.1" value="0"><em>%</em></span></label>
-        </section>
-      </aside>
-
-      <section class="centerArea">
+      <section class="guideSection gearGuide" aria-labelledby="step2Title">
+        <header class="guideHeader">
+          <span class="stepBadge">2</span>
+          <div>
+            <h2 id="step2Title">Choose your gear</h2>
+            <p>Set each equipment slot. Exclusive gear is selected automatically when the character has it.</p>
+          </div>
+        </header>
         <section class="gearSheet sheetPanel">
           <div id="gearGrid" class="gearGrid"></div>
         </section>
-
-        <div class="lowerGrid">
-          <section class="skillSheet sheetPanel">
-            <div class="skillTop">
-              <div class="skillMain">
-                <div class="skillTitleRow">
-                  <strong id="skillTitle">Damage Test</strong>
-                  <span id="targetBadge">Target</span>
-                </div>
-                <div class="skillMeta">
-                  <label>Skill <input id="skillMult" type="number" step="1" value="100"><span>% ATK</span></label>
-                  <label>Hits <input id="hits" type="number" min="1" max="30" value="1"></label>
-                </div>
-                <p id="skillDescription">Select a costume to view its skill and upgrade progression.</p>
-                <div id="skillProgression" class="skillProgression"></div>
-              </div>
-            </div>
-            <div class="skillOptions">
-              <span>Average Damage by Costume Upgrade</span>
-              <span id="charAttackType">—</span>
-            </div>
-            <div id="upgradeDamageComparison" class="upgradeDamageComparison">
-              <div class="upgradeDamageEmpty">Select a costume to compare +0 to +5.</div>
-            </div>
-            <div class="damageReviewRow"><small id="damageReview">—</small></div>
-            <div class="skillFooter">
-              <span>+5 Average</span>
-              <b id="sumDamage">—</b>
-              <span class="tag" id="charEx">—</span>
-            </div>
-          </section>
-
-          <section class="potentialSheet sheetPanel">
-            <div class="potentialProgressGrid">
-              <div class="potentialProgressCell">
-                <div class="potentialProgressHead"><b id="potProg1Stat">HP</b></div>
-                <strong id="potProg1Value">0</strong>
-                <div class="potentialProgressControl"><input id="engraveLifeOn" type="checkbox" checked><select id="engraveLife"></select></div>
-              </div>
-              <div class="potentialProgressCell">
-                <div class="potentialProgressHead"><b id="potProg2Stat">ATK</b></div>
-                <strong id="potProg2Value">0</strong>
-                <div class="potentialProgressControl"><input id="engraveStrengthOn" type="checkbox" checked><select id="engraveStrength"></select></div>
-              </div>
-              <div class="potentialProgressCell">
-                <div class="potentialProgressHead"><b id="potProg3Stat">DEF</b></div>
-                <strong id="potProg3Value">0%</strong>
-                <div class="potentialProgressControl"><input id="engravePerseveranceOn" type="checkbox" checked><select id="engravePerseverance"></select></div>
-              </div>
-              <div class="potentialProgressCell">
-                <div class="potentialProgressHead"><span class="potentialGlyph">✦</span><b id="potProg4Stat">ATK%</b></div>
-                <strong id="potProg4Value">0%</strong>
-                <div class="potentialProgressControl awakeningCell"><input id="awakening1" type="checkbox" checked></div>
-              </div>
-              <div class="potentialProgressCell">
-                <div class="potentialProgressHead"><span class="potentialGlyph">◈</span><b id="potProg5Stat">ELE%</b></div>
-                <strong id="potProg5Value">0%</strong>
-                <div class="potentialProgressControl awakeningCell"><input id="awakening2" type="checkbox" checked></div>
-              </div>
-            </div>
-
-            <div class="skillPotentialStrip">
-              <label>
-                <span class="skillPotentialIcon"><img id="skillPot1Icon" src="./assets/potential-skill.png" alt="Skill Potential 1"></span>
-                <input id="skillPot1" type="checkbox" checked>
-                <b id="skillPot1Type">—</b>
-              </label>
-              <label>
-                <span class="skillPotentialIcon"><img id="skillPot2Icon" src="./assets/potential-skill.png" alt="Skill Potential 2"></span>
-                <input id="skillPot2" type="checkbox" checked>
-                <b id="skillPot2Type">—</b>
-              </label>
-              <label>
-                <span class="skillPotentialIcon"><img id="skillPot3Icon" src="./assets/potential-skill.png" alt="Skill Potential 3"></span>
-                <input id="skillPot3" type="checkbox" checked>
-                <b id="skillPot3Type">—</b>
-              </label>
-            </div>
-            <div class="potentialSkillHeader">Skill Potentials</div>
-
-            <div class="potentialMatrixHeaders">
-              <strong>Bond Potentials</strong>
-              <strong>Permanent Potentials</strong>
-            </div>
-            <div class="potentialMatrix">
-              <div id="bondPotentialRows" class="bondPotentialRows"></div>
-              <div id="permanentPotentialRows" class="permanentPotentialRows"></div>
-            </div>
-
-            <label class="bondedToRow">
-              <strong>Bonded to:</strong>
-              <select id="bondedCostume"></select>
-            </label>
-
-            <div class="legacyPotentialHidden" hidden>
-              <span id="charElement"></span><span id="gearHpFlat"></span><span id="gearAtkLabel"></span><span id="gearAtkFlat"></span>
-              <span id="gearDef"></span><span id="gearAtkPctLabel"></span><span id="gearAtkPct"></span><span id="gearCdmg"></span>
-              <span id="detailAttackType"></span><span id="charRes"></span><span id="detailExclusive"></span><span id="detailElement"></span>
-              <span id="detailHpPct"></span><span id="detailCr"></span><span id="detailProperty"></span><span id="detailTarget"></span>
-              <span id="engraveLifeLabel"></span><span id="engraveStrengthLabel"></span><span id="engravePerseveranceLabel"></span>
-              <input id="awakening" type="checkbox" checked>
-              <input id="potPermanent" type="checkbox" checked><input id="potMinor1" type="checkbox" checked>
-              <input id="potMinor2" type="checkbox" checked><input id="potMajor1" type="checkbox" checked><input id="potMajor2" type="checkbox" checked>
-              <div id="burstInfo"></div><div id="breakdown"></div>
-            </div>
-          </section>
-        </div>
       </section>
 
-      <aside class="rightSheet sheetPanel">
-        <h3>Settings</h3>
-        <label class="rightRow"><span>Level</span><select id="level"></select></label>
-        <label class="toggleRow"><span>Advantage</span><input id="advantage" type="checkbox" checked></label>
-        <label class="rightRow"><span>Chains</span><input id="chains" type="number" min="0" value="0"></label>
-        <label class="rightRow"><span>Chain Buff</span><span class="cellInput"><input id="chainBuff" type="number" step="0.1" value="0"><em>%</em></span></label>
+      <section class="guideSection potentialGuide" aria-labelledby="step3Title">
+        <header class="guideHeader">
+          <span class="stepBadge">3</span>
+          <div>
+            <h2 id="step3Title">Set potentials and progression</h2>
+            <p>Turn progression bonuses on or off and choose the Bonded costume. Defaults are set to maximum.</p>
+          </div>
+        </header>
+        <section class="potentialSheet sheetPanel">
+          <div class="potentialProgressGrid">
+            <div class="potentialProgressCell">
+              <div class="potentialProgressHead"><b id="potProg1Stat">HP</b></div>
+              <strong id="potProg1Value">0</strong>
+              <div class="potentialProgressControl"><input id="engraveLifeOn" type="checkbox" checked><select id="engraveLife"></select></div>
+            </div>
+            <div class="potentialProgressCell">
+              <div class="potentialProgressHead"><b id="potProg2Stat">ATK</b></div>
+              <strong id="potProg2Value">0</strong>
+              <div class="potentialProgressControl"><input id="engraveStrengthOn" type="checkbox" checked><select id="engraveStrength"></select></div>
+            </div>
+            <div class="potentialProgressCell">
+              <div class="potentialProgressHead"><b id="potProg3Stat">DEF</b></div>
+              <strong id="potProg3Value">0%</strong>
+              <div class="potentialProgressControl"><input id="engravePerseveranceOn" type="checkbox" checked><select id="engravePerseverance"></select></div>
+            </div>
+            <div class="potentialProgressCell">
+              <div class="potentialProgressHead"><span class="potentialGlyph">✦</span><b id="potProg4Stat">ATK%</b></div>
+              <strong id="potProg4Value">0%</strong>
+              <div class="potentialProgressControl awakeningCell"><input id="awakening1" type="checkbox" checked></div>
+            </div>
+            <div class="potentialProgressCell">
+              <div class="potentialProgressHead"><span class="potentialGlyph">◈</span><b id="potProg5Stat">ELE%</b></div>
+              <strong id="potProg5Value">0%</strong>
+              <div class="potentialProgressControl awakeningCell"><input id="awakening2" type="checkbox" checked></div>
+            </div>
+          </div>
 
-        <h3 class="enemyHead">Enemy</h3>
-        <label class="rightRow"><span>HP</span><input id="enemyHp" type="number" value="30000"></label>
-        <label class="rightRow"><span>M/ATK</span><input id="enemyAtk" type="number" value="1000"></label>
-        <label class="rightRow"><span>RES</span><span class="cellInput"><input id="enemyRes" type="number" step="0.1" value="0"><em>%</em></span></label>
-        <label class="rightRow"><span>DMG ×</span><input id="dmgMult" type="number" step="0.01" value="1"></label>
-        <div class="rightMetric"><span>Hits</span><b id="rightHits">1</b></div>
-        <div class="rightMetric"><span>DMG Dealt</span><b id="rightDamage">—</b></div>
+          <div class="potentialSubheading">Skill Potentials</div>
+          <div class="skillPotentialStrip">
+            <label>
+              <span class="skillPotentialIcon"><img id="skillPot1Icon" src="./assets/potential-skill.png" alt="Skill Potential 1"></span>
+              <input id="skillPot1" type="checkbox" checked>
+              <b id="skillPot1Type">—</b>
+            </label>
+            <label>
+              <span class="skillPotentialIcon"><img id="skillPot2Icon" src="./assets/potential-skill.png" alt="Skill Potential 2"></span>
+              <input id="skillPot2" type="checkbox" checked>
+              <b id="skillPot2Type">—</b>
+            </label>
+            <label>
+              <span class="skillPotentialIcon"><img id="skillPot3Icon" src="./assets/potential-skill.png" alt="Skill Potential 3"></span>
+              <input id="skillPot3" type="checkbox" checked>
+              <b id="skillPot3Type">—</b>
+            </label>
+          </div>
 
-        <div class="rightActions">
-          <button id="resetBtnMirror" type="button">Reset Build</button>
-        </div>
-      </aside>
+          <div class="potentialMatrixHeaders">
+            <strong>Bond Potentials</strong>
+            <strong>Permanent Potentials</strong>
+          </div>
+          <div class="potentialMatrix">
+            <div id="bondPotentialRows" class="bondPotentialRows"></div>
+            <div id="permanentPotentialRows" class="permanentPotentialRows"></div>
+          </div>
+
+          <label class="bondedToRow">
+            <strong>Bonded to:</strong>
+            <select id="bondedCostume"></select>
+          </label>
+
+          <div class="legacyPotentialHidden" hidden>
+            <span id="charElement"></span><span id="gearHpFlat"></span><span id="gearAtkLabel"></span><span id="gearAtkFlat"></span>
+            <span id="gearDef"></span><span id="gearAtkPctLabel"></span><span id="gearAtkPct"></span><span id="gearCdmg"></span>
+            <span id="detailAttackType"></span><span id="charRes"></span><span id="detailExclusive"></span><span id="detailElement"></span>
+            <span id="detailHpPct"></span><span id="detailCr"></span><span id="detailProperty"></span><span id="detailTarget"></span>
+            <span id="engraveLifeLabel"></span><span id="engraveStrengthLabel"></span><span id="engravePerseveranceLabel"></span>
+            <input id="awakening" type="checkbox" checked>
+            <input id="potPermanent" type="checkbox" checked><input id="potMinor1" type="checkbox" checked>
+            <input id="potMinor2" type="checkbox" checked><input id="potMajor1" type="checkbox" checked><input id="potMajor2" type="checkbox" checked>
+            <div id="burstInfo"></div><div id="breakdown"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="guideSection damageGuide" aria-labelledby="step4Title">
+        <header class="guideHeader">
+          <span class="stepBadge">4</span>
+          <div>
+            <h2 id="step4Title">Review skill and damage</h2>
+            <p>Compare every costume upgrade from +0 to +5. The summary highlights the biggest gain, SP savings, and larger AoE when available.</p>
+          </div>
+        </header>
+        <section class="skillSheet sheetPanel">
+          <div class="skillTop">
+            <div class="skillMain">
+              <div class="skillTitleRow">
+                <strong id="skillTitle">Damage Test</strong>
+                <span id="targetBadge">Target</span>
+              </div>
+              <div class="skillMeta">
+                <label>Skill <input id="skillMult" type="number" step="1" value="100"><span>% ATK</span></label>
+                <label>Hits <input id="hits" type="number" min="1" max="30" value="1"></label>
+              </div>
+              <p id="skillDescription">Select a costume to view its skill and upgrade progression.</p>
+              <div id="skillProgression" class="skillProgression"></div>
+            </div>
+          </div>
+          <div class="skillOptions">
+            <span>Average Damage by Costume Upgrade</span>
+            <span id="charAttackType">—</span>
+          </div>
+          <div id="upgradeDamageComparison" class="upgradeDamageComparison">
+            <div class="upgradeDamageEmpty">Select a costume to compare +0 to +5.</div>
+          </div>
+          <div class="damageReviewRow"><small id="damageReview">—</small></div>
+          <div class="skillFooter">
+            <span>+5 Average Damage</span>
+            <b id="sumDamage">—</b>
+            <span class="tag" id="charEx">—</span>
+          </div>
+        </section>
+      </section>
     </div>
 
     <footer class="sheetFooter">
-      <span>Spreadsheet-inspired layout based on the original Brown Dust II calculator.</span>
-      <span>Changes deploy automatically from <code>main</code>.</span>
+      <span>Tip: follow steps 1 → 4 from top to bottom. Most fields update automatically.</span>
+      <span>Brown Dust II Gear Calculator</span>
     </footer>
   </main>
   <script src="./app.js"></script>

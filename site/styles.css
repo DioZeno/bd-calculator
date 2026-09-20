@@ -4058,3 +4058,118 @@ input[type="checkbox"]{
 .potentialProgressControl:not(.awakeningCell) select{
   width:100%;
 }
+
+
+/* Stronger dropdown affordance */
+.sheetShell select{
+  border:1px solid #8fa8b7!important;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb,#ffffff 48%,transparent),
+    0 1px 2px rgba(24,38,49,.10);
+  font-weight:700;
+  cursor:pointer;
+}
+.sheetShell select:hover{
+  border-color:#6f948f!important;
+  filter:saturate(1.08);
+}
+.sheetShell select:focus{
+  outline:none;
+  border-color:#4f7f77!important;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb,#4f7f77 28%,transparent),
+    inset 0 0 0 1px color-mix(in srgb,#ffffff 40%,transparent);
+}
+:root[data-theme="dark"] .sheetShell select{
+  border-color:#506273!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.035),
+    0 1px 2px rgba(0,0,0,.35);
+}
+:root[data-theme="dark"] .sheetShell select:hover{
+  border-color:#739a94!important;
+}
+:root[data-theme="dark"] .sheetShell select:focus{
+  border-color:#72a49c!important;
+  box-shadow:0 0 0 2px rgba(114,164,156,.22);
+}
+
+/* Read-only Skill metadata */
+.skillMeta{
+  grid-template-columns:1fr 1fr;
+}
+.skillMetaDisplay{
+  min-height:29px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  padding:3px 6px;
+}
+.skillMetaDisplay+ .skillMetaDisplay{
+  border-left:1px solid var(--line);
+}
+.skillMetaDisplay>span{
+  color:var(--muted);
+  font-weight:700;
+}
+.skillMetaDisplay>b{
+  min-width:52px;
+  padding:3px 7px;
+  border-radius:6px;
+  background:var(--control-blue);
+  border:1px solid color-mix(in srgb,var(--control-blue) 62%,var(--line-strong));
+  text-align:center;
+}
+
+/* Upgrade / Burst visual markers */
+#skillTitle{
+  gap:6px;
+}
+#skillTitle::before{
+  content:"";
+  width:22px;
+  height:19px;
+  flex:0 0 22px;
+  display:inline-block;
+  background:url("./assets/skill-upgrade-burst.png") center/contain no-repeat;
+}
+.tableIconTitle,
+.burstTitle{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+}
+.tableIconTitle img,
+.burstTitle img{
+  width:19px;
+  height:16px;
+  object-fit:contain;
+  image-rendering:auto;
+}
+.burstTitle{
+  min-height:24px;
+  padding:3px 5px;
+  justify-content:flex-start;
+  color:var(--ink);
+}
+
+/* Damage Review follows theme explicitly */
+.damageReviewFooter{
+  background:#ccd8e0!important;
+  color:#26323c!important;
+  border:1px solid #b7c6d0;
+}
+.damageReviewFooter small{
+  color:#35444f!important;
+}
+:root[data-theme="dark"] .damageReviewFooter{
+  background:#10171e!important;
+  color:#e6edf2!important;
+  border-color:#34424f;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+:root[data-theme="dark"] .damageReviewFooter small{
+  color:#c7d2dc!important;
+}

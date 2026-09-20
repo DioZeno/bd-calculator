@@ -3136,3 +3136,161 @@ button:hover,.buttonLike:hover{
   .exclusiveValue,.gearStatValue{min-height:23px}
   .skillProgression{max-height:185px}
 }
+
+/* Compact lower dashboard rebalance: Damage center, Potentials right */
+@media(min-width:1180px){
+  .guidedLayout{
+    grid-template-columns:240px minmax(0,1.6fr) minmax(320px,.78fr);
+  }
+
+  .damageGuide{
+    grid-column:2;
+    grid-row:2;
+  }
+
+  .potentialGuide{
+    grid-column:3;
+    grid-row:2;
+  }
+
+  /* Give Damage the useful horizontal space */
+  .damageGuide .skillSheet{
+    min-width:0;
+  }
+  .damageGuide .skillProgression{
+    max-height:205px;
+  }
+  .damageGuide .upgradeTable{
+    width:100%;
+    table-layout:fixed;
+  }
+  .damageGuide .upgradeDamageMiniTable{
+    width:100%;
+    min-width:0;
+    table-layout:fixed;
+  }
+
+  /* Make the narrow Potential panel dense instead of leaving empty white space */
+  .potentialGuide .potentialSheet{
+    padding:6px;
+  }
+  .potentialGuide .potentialProgressGrid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:3px;
+  }
+  .potentialGuide .potentialProgressCell{
+    grid-template-rows:20px 23px 25px;
+  }
+  .potentialGuide .potentialProgressHead b{
+    font-size:7px;
+  }
+  .potentialGuide .potentialProgressCell>strong{
+    font-size:9px;
+  }
+  .potentialGuide .potentialProgressControl{
+    grid-template-columns:15px minmax(0,1fr);
+    padding:1px 2px;
+  }
+  .potentialGuide .potentialProgressControl input{
+    width:12px;
+    height:12px;
+  }
+  .potentialGuide .potentialProgressControl select{
+    min-width:0;
+    height:18px;
+    min-height:18px;
+    font-size:7px;
+  }
+
+  .potentialGuide .potentialSubheading{
+    margin:5px 0 3px;
+    font-size:8px;
+  }
+  .potentialGuide .skillPotentialStrip{
+    gap:3px;
+  }
+  .potentialGuide .skillPotentialStrip label{
+    min-height:48px;
+    grid-template-rows:22px 13px 11px;
+    padding:3px;
+  }
+  .potentialGuide .skillPotentialIcon,
+  .potentialGuide .skillPotentialIcon img{
+    width:21px;
+    height:21px;
+  }
+  .potentialGuide .skillPotentialStrip input{
+    width:11px;
+    height:11px;
+  }
+  .potentialGuide .skillPotentialStrip b{
+    font-size:7px;
+  }
+
+  .potentialGuide .potentialMatrixHeaders{
+    grid-template-columns:42% 58%;
+    gap:4px;
+    margin-top:5px;
+  }
+  .potentialGuide .potentialMatrixHeaders strong{
+    min-height:20px;
+    padding:0 4px;
+    font-size:7px;
+  }
+  .potentialGuide .potentialMatrix{
+    grid-template-columns:42% 58%;
+    gap:4px;
+    margin-top:2px;
+    align-items:start;
+  }
+  .potentialGuide .bondPotentialRows,
+  .potentialGuide .permanentPotentialRows{
+    align-self:start;
+  }
+  .potentialGuide .bondPotentialRow,
+  .potentialGuide .permanentPotentialRow{
+    min-height:24px;
+    font-size:7px;
+  }
+  .potentialGuide .bondPotentialRow{
+    grid-template-columns:minmax(28px,1fr) 34px 25px;
+  }
+  .potentialGuide .permanentPotentialRow{
+    grid-template-columns:minmax(58px,1.45fr) 34px 38px 25px;
+  }
+  .potentialGuide .bondPotentialRow b{
+    padding-left:4px;
+    font-size:7px;
+  }
+  .potentialGuide .permanentPotentialRow .costumeName{
+    padding-left:4px;
+    font-size:7px;
+  }
+  .potentialGuide .bondPotentialRow select,
+  .potentialGuide .permanentPotentialRow select{
+    width:22px;
+    height:18px;
+    font-size:7px;
+  }
+  .potentialGuide .bondedToRow{
+    min-height:27px;
+    margin-top:3px;
+    grid-template-columns:54px minmax(0,1fr);
+  }
+  .potentialGuide .bondedToRow strong{
+    padding-left:5px;
+    font-size:7px;
+  }
+  .potentialGuide .bondedToRow select{
+    min-width:0;
+    height:20px;
+    min-height:20px;
+    font-size:7px;
+  }
+}
+
+@media(min-width:1400px){
+  .guidedLayout{
+    grid-template-columns:240px minmax(0,1.72fr) minmax(350px,.72fr);
+  }
+}

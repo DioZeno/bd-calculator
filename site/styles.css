@@ -4448,3 +4448,60 @@ input[type="checkbox"]{
   background:#344652!important;
   color:#fff8e9!important;
 }
+
+
+/* Gear selects stay with the compact calculator theme, not BD2 dropdown theme */
+.gearCard select{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  color:var(--ink)!important;
+  border:1px solid var(--line-strong)!important;
+  border-radius:5px!important;
+  padding-right:4px!important;
+  background-image:none!important;
+  background-color:var(--input)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18)!important;
+  text-shadow:none!important;
+  font-weight:700!important;
+}
+.gearCard select:hover{
+  color:var(--ink)!important;
+  border-color:#8fa3b1!important;
+  background-image:none!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+.gearCard select:focus{
+  color:var(--ink)!important;
+  outline:none!important;
+  border-color:#7892a3!important;
+  background-image:none!important;
+  box-shadow:0 0 0 1px rgba(120,146,163,.2)!important;
+}
+.gearCard select option{
+  background:var(--sheet)!important;
+  color:var(--ink)!important;
+}
+.gearCard .gearName select{
+  background-color:var(--control-teal)!important;
+}
+.gearCard .gearTier select{
+  background-color:var(--control-blue)!important;
+}
+.gearCard .refineGroup select{
+  background-color:var(--control-gold)!important;
+}
+.gearCard .gearBasic select{
+  background-color:var(--control-neutral)!important;
+}
+.gearCard .gearSub select{
+  background-color:var(--control-violet)!important;
+}
+.gearCard .gearTier.exclusiveTier select{
+  background-color:var(--control-green)!important;
+  border-color:#70a987!important;
+}
+:root[data-theme="dark"] .gearCard select{
+  border-color:var(--line-strong)!important;
+  color:var(--ink)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04)!important;
+}

@@ -163,19 +163,24 @@
             <div class="skillMain">
               <div class="skillTitleRow">
                 <strong id="skillTitle">Damage Test</strong>
-                <span id="targetBadge">Target</span>
               </div>
-              <div class="skillMeta">
-                <div class="skillMetaDisplay">
-                  <span>Skill</span>
-                  <b id="skillMultDisplay">100% ATK</b>
-                  <input id="skillMult" type="hidden" value="100">
+              <div class="skillCombatSummary">
+                <div class="skillCostMeta">
+                  <div><span>SP</span><b id="skillSpValue">—</b></div>
+                  <div><span>CD</span><b id="skillCdValue">—</b></div>
+                  <div><span>Hits</span><b id="hitsDisplay">1</b></div>
                 </div>
-                <div class="skillMetaDisplay">
-                  <span>Hits</span>
-                  <b id="hitsDisplay">1</b>
-                  <input id="hits" type="hidden" value="1">
+                <div class="skillRangeBlock">
+                  <img id="skillRangeImage" alt="Skill range" referrerpolicy="no-referrer">
+                  <small id="skillRangeLabel">Range</small>
                 </div>
+                <div class="skillTargetBlock">
+                  <span>Target</span>
+                  <b id="targetBadge">Target</b>
+                </div>
+                <input id="skillMult" type="hidden" value="100">
+                <input id="hits" type="hidden" value="1">
+                <span id="skillMultDisplay" hidden></span>
               </div>
               <p id="skillDescription">Select a costume to view its skill and upgrade progression.</p>
               <div id="skillProgression" class="skillProgression"></div>

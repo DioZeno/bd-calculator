@@ -377,6 +377,7 @@ function setup(){
   initSearchableSelect("costume");
   initCharacterModal();
   showBlankSelectionState();
+  applySelectionFromUrl();
   const actualCostumeCount=costumes.filter(function(x){return !x.is_basic_attack;}).length;
   const gearCount=new Set(gearCatalog.map(function(x){return x.weapon_id;})).size;
   $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+actualCostumeCount+" costumes + Basic Attack"+(gearCount?" · "+gearCount+" gears":" · gear catalog unavailable");
@@ -815,6 +816,94 @@ function abilityTokens(text){
   return out;
 }
 function compactName(v){return slug(v).replace(/-/g,"");}
+function selectionQuery(){
+  const p=new URLSearchParams(window.location.search);
+  return {
+    character:p.get("character")||p.get("char")||p.get("c")||p.get("")||"",
+    costume:p.get("costume")||p.get("skin")||p.get("outfit")||p.get("s")||""
+  };
+}
+function selectionToken(value){
+  return slug(String(value==null?"":value)).replace(/^-+|-+$/g,"");
+}
+function findCharacterFromQuery(value){
+  const q=selectionToken(value);
+  if(!q)return null;
+  const compact=q.replace(/-/g,"");
+  return characters.find(function(c){
+    return [
+      c.__id,
+      c.Name
+    ].some(function(v){
+      const t=selectionToken(v);
+      return t===q||t.replace(/-/g,"")===compact;
+    });
+  })||null;
+}
+function findCostumeFromQuery(character,value){
+  if(!character||!value)return null;
+  const raw=String(value).trim();
+  const q=selectionToken(raw);
+  const compact=q.replace(/-/g,"");
+  if(q==="basic"||q==="basic-attack")return {id:"__basic__"};
+  const prefix=selectionToken(character.__id)+"--";
+  return costumes.find(function(costume){
+    if(costume.character_id!==character.__id||costume.is_basic_attack)return false;
+    const id=selectionToken(costume.id);
+    const shortId=id.startsWith(prefix)?id.slice(prefix.length):id;
+    const media=selectionToken(costume.external_id||"");
+    const name=selectionToken(costume.name||"");
+    const tokens=[id,shortId,media,name];
+    return tokens.some(function(t){
+      return t===q||t.replace(/-/g,"")===compact;
+    });
+  })||null;
+}
+function syncSelectionUrl(){
+  const c=getChar();
+  const url=new URL(window.location.href);
+  ["character","char","c","costume","skin","outfit","s",""].forEach(function(key){url.searchParams.delete(key);});
+  if(c){
+    url.searchParams.set("character",selectionToken(c.__id||c.Name));
+    const costume=getCostume();
+    if(costume){
+      url.searchParams.set(
+        "costume",
+        costume.is_basic_attack?"basic":selectionToken(costume.name||costume.id)
+      );
+    }
+  }
+  const next=url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash;
+  window.history.replaceState(null,"",next);
+}
+function applySelectionFromUrl(){
+  const q=selectionQuery();
+  if(!q.character)return false;
+  const character=findCharacterFromQuery(q.character);
+  if(!character)return false;
+
+  $("#character").value=character.__id;
+  potentialCharacterId="";
+  bondedCostumeId="";
+  permanentPotentialLevels={};
+  updateLevelOptions();
+  updateCostumeOptions();
+
+  if(q.costume){
+    const costume=findCostumeFromQuery(character,q.costume);
+    if(costume){
+      $("#costume").value=costume.id;
+      syncSearchableSelect("costume");
+      syncCalculationMode();
+    }
+  }
+
+  applyCharacterDefaultGearTiers();
+  buildGearUI();
+  render();
+  syncSelectionUrl();
+  return true;
+}
 function catalogMatchesCharacter(row,c){
   if(row.category!=="Exclusive")return true;
   const owner=compactName(row.character_id||"");
@@ -1055,16 +1144,17 @@ function wire(){
       render();return;
     }
     if(e.target.id==="character"){
-      if(!e.target.value){showBlankSelectionState();return;}
+      if(!e.target.value){showBlankSelectionState();syncSelectionUrl();return;}
       potentialCharacterId="";bondedCostumeId="";permanentPotentialLevels={};
       updateLevelOptions();
       updateCostumeOptions();
       applyCharacterDefaultGearTiers();
       buildGearUI();
       render();
+      syncSelectionUrl();
       return;
     }
-    if(e.target.id==="costume"){syncSearchableSelect("costume");syncCalculationMode();render();return;}
+    if(e.target.id==="costume"){syncSearchableSelect("costume");syncCalculationMode();render();syncSelectionUrl();return;}
     if(e.target.id==="dupe"){syncCostumeUpgradeToCalculator();render();return;}
     if(e.target.id==="bondedCostume"){bondedCostumeId=e.target.value;render();return;}
     if(e.target.dataset.bondKey){bondPotentialLevels[e.target.dataset.bondKey]=Number(e.target.value)||0;render();return;}

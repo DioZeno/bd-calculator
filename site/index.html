@@ -125,46 +125,66 @@
           </section>
 
           <section class="potentialSheet sheetPanel">
-            <div class="potentialHeader">
-              <strong>Build Details</strong>
-              <span id="charElement">—</span>
+            <div class="potentialProgressGrid">
+              <div class="potentialProgressCell">
+                <div class="potentialProgressHead"><span class="potentialGlyph">♥</span><b id="potProg1Stat">HP</b></div>
+                <strong id="potProg1Value">0</strong>
+                <div class="potentialProgressControl"><input id="engraveLifeOn" type="checkbox" checked><select id="engraveLife"></select></div>
+              </div>
+              <div class="potentialProgressCell">
+                <div class="potentialProgressHead"><span class="potentialGlyph">⚔</span><b id="potProg2Stat">ATK</b></div>
+                <strong id="potProg2Value">0</strong>
+                <div class="potentialProgressControl"><input id="engraveStrengthOn" type="checkbox" checked><select id="engraveStrength"></select></div>
+              </div>
+              <div class="potentialProgressCell">
+                <div class="potentialProgressHead"><span class="potentialGlyph">▦</span><b id="potProg3Stat">DEF</b></div>
+                <strong id="potProg3Value">0%</strong>
+                <div class="potentialProgressControl"><input id="engravePerseveranceOn" type="checkbox" checked><select id="engravePerseverance"></select></div>
+              </div>
+              <div class="potentialProgressCell">
+                <div class="potentialProgressHead"><span class="potentialGlyph">✦</span><b id="potProg4Stat">ATK%</b></div>
+                <strong id="potProg4Value">0%</strong>
+                <div class="potentialProgressControl awakeningCell"><input id="awakening1" type="checkbox" checked></div>
+              </div>
+              <div class="potentialProgressCell">
+                <div class="potentialProgressHead"><span class="potentialGlyph">◈</span><b id="potProg5Stat">ELE%</b></div>
+                <strong id="potProg5Value">0%</strong>
+                <div class="potentialProgressControl awakeningCell"><input id="awakening2" type="checkbox" checked></div>
+              </div>
             </div>
-            <div class="potentialTop">
-              <div><span>HP</span><b id="gearHpFlat">0</b></div>
-              <div><span id="gearAtkLabel">ATK</span><b id="gearAtkFlat">0</b></div>
-              <div><span>DEF</span><b id="gearDef">0%</b></div>
-              <div><span id="gearAtkPctLabel">ATK%</span><b id="gearAtkPct">0%</b></div>
-              <div><span>CDMG</span><b id="gearCdmg">0%</b></div>
+
+            <div class="potentialSkillHeader">Skill Potentials</div>
+            <div class="skillPotentialStrip">
+              <label><b id="skillPot1Type">—</b><input id="skillPot1" type="checkbox" checked></label>
+              <label><b id="skillPot2Type">—</b><input id="skillPot2" type="checkbox" checked></label>
+              <label><b id="skillPot3Type">—</b><input id="skillPot3" type="checkbox" checked></label>
             </div>
-            <table class="detailTable">
-              <tbody>
-                <tr><th>Attack Type</th><td id="detailAttackType">—</td><th>Resistance</th><td id="charRes">—</td></tr>
-                <tr><th>Exclusive</th><td id="detailExclusive">—</td><th>Element</th><td id="detailElement">—</td></tr>
-                <tr><th>Gear HP%</th><td id="detailHpPct">—</td><th>Gear CR</th><td id="detailCr">—</td></tr>
-                <tr><th>Final Property</th><td id="detailProperty">—</td><th>Target</th><td id="detailTarget">—</td></tr>
-              </tbody>
-            </table>
-            <section class="progressionBox">
-              <div class="progressionHead">
-                <strong>Progression</strong>
-                <small>Engraving · Awakening · Potentials</small>
-              </div>
-              <div class="progressionGrid">
-                <label><span id="engraveLifeLabel">Life</span><select id="engraveLife"></select></label>
-                <label><span id="engraveStrengthLabel">Strength</span><select id="engraveStrength"></select></label>
-                <label><span id="engravePerseveranceLabel">Perseverance</span><select id="engravePerseverance"></select></label>
-                <label class="awakeningToggle"><span>Awakening</span><input id="awakening" type="checkbox" checked></label>
-              </div>
-              <div class="potentialToggles">
-                <label><input id="potPermanent" type="checkbox" checked><span>Permanent</span></label>
-                <label><input id="potMinor1" type="checkbox" checked><span>Minor 1</span></label>
-                <label><input id="potMinor2" type="checkbox" checked><span>Minor 2</span></label>
-                <label><input id="potMajor1" type="checkbox" checked><span>Major 1</span></label>
-                <label><input id="potMajor2" type="checkbox" checked><span>Major 2</span></label>
-              </div>
-              <div id="burstInfo" class="burstInfo">No Burst data for this costume.</div>
-            </section>
-            <div id="breakdown" class="breakdown"></div>
+
+            <div class="potentialMatrixHeaders">
+              <strong>Bond Potentials</strong>
+              <strong>Permanent Potentials</strong>
+            </div>
+            <div class="potentialMatrix">
+              <div id="bondPotentialRows" class="bondPotentialRows"></div>
+              <div id="permanentPotentialRows" class="permanentPotentialRows"></div>
+            </div>
+
+            <label class="bondedToRow">
+              <strong>Bonded to:</strong>
+              <select id="bondedCostume"></select>
+            </label>
+
+            <div class="legacyPotentialHidden" hidden>
+              <span id="charElement"></span><span id="gearHpFlat"></span><span id="gearAtkLabel"></span><span id="gearAtkFlat"></span>
+              <span id="gearDef"></span><span id="gearAtkPctLabel"></span><span id="gearAtkPct"></span><span id="gearCdmg"></span>
+              <span id="detailAttackType"></span><span id="charRes"></span><span id="detailExclusive"></span><span id="detailElement"></span>
+              <span id="detailHpPct"></span><span id="detailCr"></span><span id="detailProperty"></span><span id="detailTarget"></span>
+              <span id="engraveLifeLabel"></span><span id="engraveStrengthLabel"></span><span id="engravePerseveranceLabel"></span>
+              <input id="awakening" type="checkbox" checked>
+              <input id="potPermanent" type="checkbox" checked><input id="potMinor1" type="checkbox" checked>
+              <input id="potMinor2" type="checkbox" checked><input id="potMajor1" type="checkbox" checked><input id="potMajor2" type="checkbox" checked>
+              <div id="burstInfo"></div><div id="breakdown"></div>
+            </div>
           </section>
         </div>
       </section>

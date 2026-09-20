@@ -3294,3 +3294,287 @@ button:hover,.buttonLike:hover{
     grid-template-columns:240px minmax(0,1.72fr) minmax(350px,.72fr);
   }
 }
+
+/* Extra-dense desktop pass */
+@media(min-width:1180px){
+  .sheetShell{
+    width:min(1600px,calc(100% - 12px));
+  }
+  .topBar{
+    min-height:40px;
+    margin:0 -6px 6px;
+    padding:4px 8px;
+  }
+  .brandMark{width:23px;height:23px;font-size:14px}
+  .brand strong{font-size:12px}
+  .brand small{font-size:8px}
+  .topActions button,.topActions .buttonLike{
+    min-height:25px;
+    padding:3px 7px;
+    font-size:9px;
+  }
+  .guidedLayout{
+    grid-template-columns:226px minmax(0,1.68fr) minmax(305px,.72fr);
+    gap:6px;
+  }
+  .guideSection{gap:3px}
+  .guideHeader h2{font-size:11px}
+  .guideHeader p{font-size:8px}
+
+  /* left side */
+  .overviewGrid{gap:4px}
+  .choiceCard,.statsCard,.settingsCard{padding:6px}
+  .choiceCard>h3,.statsCard>h3,.settingsCard>h3{
+    margin-bottom:4px;
+    font-size:9px;
+  }
+  .leftPortrait{
+    width:92px;
+    margin-bottom:5px;
+  }
+  .portraitPlaceholder small{
+    height:18px;
+    font-size:7px;
+  }
+  .portraitPickHint{
+    min-height:19px;
+    font-size:7px;
+  }
+  .searchSelect>input{
+    height:26px;
+    min-height:26px;
+    font-size:9px;
+  }
+  .searchSelect::after{top:4px}
+  .leftCatalog{
+    min-height:24px;
+    margin-top:3px;
+    padding:3px 5px;
+  }
+  .leftCatalog span,.leftCatalog strong{font-size:7px}
+  .statTable{gap:3px}
+  .statRow{
+    min-height:26px;
+    grid-template-columns:15px minmax(0,1fr) auto;
+    padding:2px 4px;
+  }
+  .statRow>span:first-child{font-size:8px}
+  .statRow b{font-size:7px}
+  .statRow strong{font-size:9px}
+  .settingsGrid{gap:3px}
+  .friendlyField input,.friendlyField select,.friendlyNumber input{
+    min-height:23px;
+    height:23px;
+    font-size:8px;
+  }
+  .friendlyField>span,.friendlyToggle span{font-size:7px}
+  .friendlyToggle{
+    min-height:23px;
+    padding:2px 4px;
+  }
+  .friendlyToggle input{width:11px;height:11px}
+  .settingsDivider{padding-top:3px;font-size:7px}
+  .resultStrip{margin-top:4px;gap:3px}
+  .resultStrip>div{min-height:31px}
+  .resultStrip span{font-size:6px}
+  .resultStrip b{font-size:9px}
+  .largeSecondaryButton{
+    min-height:24px;
+    margin-top:4px;
+    font-size:8px;
+  }
+  .bonusPanel summary{
+    min-height:26px;
+    padding:3px 6px;
+    font-size:8px;
+  }
+  .bonusPanel summary small{font-size:7px}
+
+  /* gear: convert stacked form into compact horizontal rows */
+  .gearSheet{
+    padding:5px;
+  }
+  .gearGrid{
+    gap:4px;
+  }
+  .gearCard{
+    padding:5px 6px;
+    border-radius:7px;
+  }
+  .gearCardHeader{
+    min-height:20px;
+    margin:0 0 2px;
+    padding-bottom:3px;
+  }
+  .gearCardHeader strong{font-size:9px}
+  .exMark{font-size:6px;padding:1px 3px}
+
+  .gearField{
+    display:grid;
+    grid-template-columns:44px minmax(0,1fr);
+    align-items:center;
+    gap:4px;
+    margin-top:2px;
+    min-height:22px;
+  }
+  .gearField>span{
+    margin:0;
+    font-size:6px;
+    line-height:1;
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .gearField select{
+    height:22px;
+    min-height:22px;
+    padding:0 4px;
+    border-radius:5px;
+    font-size:7px;
+  }
+  .gearName{
+    grid-template-columns:44px minmax(0,1fr);
+  }
+  .gearTier{
+    grid-template-columns:44px minmax(0,1fr);
+  }
+  .refineGroup{
+    grid-column:2;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:2px;
+  }
+  .refineGroup select,.refineGroup select:last-child{
+    height:21px;
+    min-height:21px;
+    font-size:7px;
+    border-radius:5px;
+  }
+  .exclusiveValue{
+    min-height:21px;
+    padding:2px 4px;
+    border-radius:5px;
+    font-size:7px;
+  }
+  .exclusiveValue b{font-size:7px}
+  .gearStatControl{
+    grid-template-columns:minmax(0,1fr) 43px;
+    gap:2px;
+  }
+  .gearStatValue{
+    min-height:21px;
+    padding:0 3px;
+    border-radius:5px;
+    font-size:7px;
+  }
+
+  /* damage a little denser */
+  .skillSheet{padding:5px}
+  .skillTitleRow{min-height:25px}
+  .skillTitleRow strong{font-size:9px}
+  .skillTitleRow span{font-size:7px}
+  .skillMeta{min-height:25px}
+  .skillMeta input{height:19px;min-height:19px}
+  .skillMain p{padding:3px 2px;font-size:7px}
+  .damageGuide .skillProgression{max-height:170px}
+  .upgradeTable th,.upgradeTable td{padding:2px 2px}
+  .skillOptions{min-height:22px;font-size:7px}
+  .upgradeDamageMiniTable th,.upgradeDamageMiniTable td{
+    height:20px;
+    padding:1px;
+  }
+  .damageReviewRow{
+    min-height:26px;
+    padding:3px 5px;
+  }
+  .damageReviewRow small{font-size:7px}
+  .skillFooter{
+    min-height:25px;
+    margin-top:3px;
+  }
+
+  /* potentials: remove excess white area and reduce row heights */
+  .potentialGuide .potentialSheet{padding:4px}
+  .potentialGuide .potentialProgressGrid{gap:2px}
+  .potentialGuide .potentialProgressCell{
+    grid-template-rows:18px 20px 22px;
+  }
+  .potentialGuide .potentialProgressHead b{font-size:6px}
+  .potentialGuide .potentialProgressCell>strong{font-size:8px}
+  .potentialGuide .potentialProgressControl{
+    grid-template-columns:13px minmax(0,1fr);
+    padding:1px;
+  }
+  .potentialGuide .potentialProgressControl input{
+    width:10px;height:10px;
+  }
+  .potentialGuide .potentialProgressControl select{
+    height:16px;min-height:16px;font-size:6px;
+  }
+  .potentialGuide .potentialSubheading{
+    margin:3px 0 2px;
+    font-size:7px;
+  }
+  .potentialGuide .skillPotentialStrip{gap:2px}
+  .potentialGuide .skillPotentialStrip label{
+    min-height:40px;
+    grid-template-rows:18px 11px 9px;
+    padding:2px;
+  }
+  .potentialGuide .skillPotentialIcon,
+  .potentialGuide .skillPotentialIcon img{
+    width:17px;height:17px;
+  }
+  .potentialGuide .skillPotentialStrip input{width:9px;height:9px}
+  .potentialGuide .skillPotentialStrip b{font-size:6px}
+  .potentialGuide .potentialMatrixHeaders{
+    margin-top:3px;
+    gap:2px;
+  }
+  .potentialGuide .potentialMatrixHeaders strong{
+    min-height:17px;
+    padding:0 3px;
+    font-size:6px;
+  }
+  .potentialGuide .potentialMatrix{
+    margin-top:2px;
+    gap:2px;
+  }
+  .potentialGuide .bondPotentialRow,
+  .potentialGuide .permanentPotentialRow{
+    min-height:21px;
+    font-size:6px;
+  }
+  .potentialGuide .bondPotentialRow{
+    grid-template-columns:minmax(25px,1fr) 29px 21px;
+  }
+  .potentialGuide .permanentPotentialRow{
+    grid-template-columns:minmax(52px,1.4fr) 29px 33px 21px;
+  }
+  .potentialGuide .bondPotentialRow b,
+  .potentialGuide .permanentPotentialRow .costumeName{
+    font-size:6px;
+  }
+  .potentialGuide .bondPotentialRow select,
+  .potentialGuide .permanentPotentialRow select{
+    width:19px;
+    height:16px;
+    font-size:6px;
+  }
+  .potentialGuide .bondedToRow{
+    min-height:23px;
+    margin-top:2px;
+    grid-template-columns:46px minmax(0,1fr);
+  }
+  .potentialGuide .bondedToRow strong{font-size:6px}
+  .potentialGuide .bondedToRow select{
+    height:17px;
+    min-height:17px;
+    font-size:6px;
+  }
+}
+
+@media(min-width:1450px){
+  .guidedLayout{
+    grid-template-columns:226px minmax(0,1.8fr) minmax(310px,.68fr);
+  }
+}

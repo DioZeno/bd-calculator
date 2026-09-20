@@ -450,7 +450,8 @@ function showBlankSelectionState(){
   $("#rarityBadge").textContent="";
   $("#catalogCount").textContent="—";
   $("#gearGrid").innerHTML="";
-  $("#portraitBox").classList.remove("hasPortrait");
+  setPortraitState("missing");
+  $("#costumePortrait").dataset.mediaId="";
   $("#costumePortrait").removeAttribute("src");
   $("#portraitInitial").textContent="?";
   $("#portraitElement").textContent="Select";
@@ -498,27 +499,44 @@ function costumePortraitUrl(costume){
   const mediaId=costumeMediaId(costume);
   return mediaId?BD2DB_IMAGE_HOST+"/characters/"+encodeURIComponent(mediaId)+".webp":"";
 }
+function setPortraitState(state){
+  const box=$("#portraitBox");
+  if(!box)return;
+  box.classList.remove("hasPortrait","loadingPortrait","noPortrait");
+  if(state==="loaded")box.classList.add("hasPortrait");
+  else if(state==="loading")box.classList.add("loadingPortrait");
+  else box.classList.add("noPortrait");
+}
 function updateCostumePortrait(){
   const box=$("#portraitBox"),img=$("#costumePortrait"),costume=getCostume();
   if(!box||!img)return;
   const mediaId=costumeMediaId(costume);
   const selectedChar=getChar();
   $("#portraitInitial").textContent=selectedChar?(selectedChar.Name||"?").slice(0,1).toUpperCase():"?";
+
   if(!mediaId){
-    box.classList.remove("hasPortrait");
+    setPortraitState("missing");
     img.dataset.mediaId="";
     img.removeAttribute("src");
     img.alt="";
     return;
   }
-  if(img.dataset.mediaId===mediaId&&img.getAttribute("src"))return;
-  box.classList.remove("hasPortrait");
+
+  if(img.dataset.mediaId===mediaId&&img.getAttribute("src")){
+    if(img.complete&&img.naturalWidth>0)setPortraitState("loaded");
+    return;
+  }
+
+  setPortraitState("loading");
   img.dataset.mediaId=mediaId;
   img.alt=(costume&&costume.name?costume.name:"Costume")+" portrait";
-  img.onload=function(){if(img.dataset.mediaId===mediaId)box.classList.add("hasPortrait");};
+  img.onload=function(){
+    if(img.dataset.mediaId!==mediaId)return;
+    setPortraitState("loaded");
+  };
   img.onerror=function(){
     if(img.dataset.mediaId!==mediaId)return;
-    box.classList.remove("hasPortrait");
+    setPortraitState("missing");
     img.dataset.mediaId="";
     img.removeAttribute("src");
   };
@@ -860,7 +878,6 @@ function updateCostumeOptions(){
   }
   syncSearchableSelect("costume");
   updateCatalogCount();
-  updateBurstOptions();
   syncCalculationMode();
 }
 function syncCalculationMode(){
@@ -869,13 +886,7 @@ function syncCalculationMode(){
   $("#dupe").value=basic?"0":"5";
   syncCostumeUpgradeToCalculator();
 }
-function updateBurstOptions(){
-  const costume=getCostume(),el=$("#burst");
-  const rows=(!costume||costume.is_basic_attack)?[]:costumeBursts.filter(function(x){return x.costume_id===costume.id;});
-  el.innerHTML='<option value="0">None</option>'+rows.map(function(x){return '<option value="'+x.stage+'">Burst '+x.stage+"</option>";}).join("");
-  el.disabled=!rows.length;
-  if(!rows.length)el.value="0";
-}
+
 function resetBuild(){
   if(!getChar()){showBlankSelectionState();return;}
   gearState=clone(DEFAULT_GEAR);applyCharacterDefaultGearTiers();buildGearUI();
@@ -924,8 +935,7 @@ function wire(){
       render();
       return;
     }
-    if(e.target.id==="costume"){syncSearchableSelect("costume");updateBurstOptions();syncCalculationMode();render();return;}
-    if(e.target.id==="burst"){syncCostumeUpgradeToCalculator();render();return;}
+    if(e.target.id==="costume"){syncSearchableSelect("costume");syncCalculationMode();render();return;}
     if(e.target.id==="dupe"){syncCostumeUpgradeToCalculator();render();return;}
     if(e.target.id==="bondedCostume"){bondedCostumeId=e.target.value;render();return;}
     if(e.target.dataset.bondKey){bondPotentialLevels[e.target.dataset.bondKey]=Number(e.target.value)||0;render();return;}
@@ -1190,14 +1200,7 @@ function replaceUpgradeValuesInDescription(costume,vars,dupe){
   });
   return text;
 }
-function selectedBurstForCostume(costume){
-  if(!costume||costume.is_basic_attack)return null;
-  const stage=Number($("#burst").value)||0;
-  if(!stage)return null;
-  return costumeBursts.find(function(x){
-    return x.costume_id===costume.id&&Number(x.stage)===stage;
-  })||null;
-}
+
 function burstPrimaryBonus(burst,primary){
   if(!burst||!primary||!burst.effects)return 0;
   const target=String(burst.effects.target||"");
@@ -1220,7 +1223,6 @@ function syncCostumeUpgradeToCalculator(){
     let p=percentNumber(value);
     if(p==null)p=numericValue(value);
     if(p!=null){
-      p+=burstPrimaryBonus(selectedBurstForCostume(costume),primary);
       $("#skillMult").value=String(p);
     }
   }
@@ -1374,12 +1376,10 @@ function updateCostumePanel(r){
   $("#targetBadge").textContent=costume.target||c.TARGET||"Target";
   $("#skillProgression").innerHTML=buildUpgradeTable(costume,r,allVars)+buildBurstTable(costume,r,allVars);
 
-  const burstStage=Number($("#burst").value)||0;
-  const burst=costumeBursts.find(function(x){return x.costume_id===costume.id&&Number(x.stage)===burstStage;});
   const burstRows=costumeBursts.filter(function(x){return x.costume_id===costume.id;});
-  $("#burstInfo").textContent=burst
-    ? (("Burst "+burst.stage+" · SP "+burst.extra_sp+" · ")+(burst.effect_summary||"Effect data loaded."))
-    : (burstRows.length?"Burst available · choose a stage above or compare all stages in Skill.":"No Burst data for this costume.");
+  $("#burstInfo").textContent=burstRows.length
+    ? "Burst stages are shown in the Skill comparison table."
+    : "No Burst data for this costume.";
 }
 function render(){
   if(!characters.length||!getChar())return;

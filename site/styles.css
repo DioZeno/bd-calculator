@@ -4049,3 +4049,12 @@ input[type="checkbox"]{
   width:14px!important;
   height:14px!important;
 }
+
+
+/* Engraving level selectors use 0–10 directly; no redundant checkbox */
+.potentialProgressControl:not(.awakeningCell){
+  grid-template-columns:minmax(0,1fr)!important;
+}
+.potentialProgressControl:not(.awakeningCell) select{
+  width:100%;
+}

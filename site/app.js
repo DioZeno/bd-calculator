@@ -907,26 +907,35 @@ function applyCatalogGear(slot,id){
 }
 function buildGearUI(){
   const grid=$("#gearGrid");
-  grid.innerHTML='<div class="gearLabels"><div>Gear</div><div>Tier</div><div>Refinement</div><div>Exclusive</div><div>Basic 1</div><div>Basic 2</div><div>Substat 1</div><div>Substat 2</div><div>Substat 3</div><div>Gear Slot</div></div>';
+  grid.innerHTML="";
   Object.keys(DEFAULT_GEAR).forEach(function(slot){
     syncExclusiveGearForSlot(slot);
     const g=gearState[slot],col=document.createElement("article");
     col.className="gearCard";col.dataset.slot=slot;
+
     let refs="";
-    [0,1,2].forEach(function(i){refs+='<select data-ref="'+i+'">'+selectOptions(["C","B","A","S"],g.ref[i])+"</select>";});
+    [0,1,2].forEach(function(i){
+      refs+='<select data-ref="'+i+'" aria-label="'+slot+' refinement '+(i+1)+'">'+selectOptions(["C","B","A","S"],g.ref[i])+"</select>";
+    });
+
     let subs="";
     [0,1,2].forEach(function(i){
-      subs+='<div class="gearCell gearStatCell gearSub"><select data-sub="'+i+'">'+selectOptions(SUB_OPTIONS,g.subs[i])+'</select><b class="gearStatValue" data-value="sub'+i+'">—</b></div>';
+      subs+='<label class="gearField gearSub"><span>Substat '+(i+1)+'</span><div class="gearStatControl">'+
+        '<select data-sub="'+i+'">'+selectOptions(SUB_OPTIONS,g.subs[i])+'</select>'+
+        '<b class="gearStatValue" data-value="sub'+i+'">—</b></div></label>';
     });
+
     col.innerHTML=
-      '<div class="gearCell gearName"><select data-gear aria-label="'+slot+' gear">'+gearCatalogOptions(slot,g.catalogId||"")+"</select></div>"+
-      '<div class="gearCell gearTier"><select data-k="tier">'+tierOptions()+"</select></div>"+
-      '<div class="gearCell"><div class="refineGroup">'+refs+"</div></div>"+
-      '<div class="gearCell"><div class="exclusiveValue"><span>-</span><b>-</b></div></div>'+
-      '<div class="gearCell gearStatCell gearBasic"><select data-k="main1"></select><b class="gearStatValue" data-value="main1">—</b></div>'+
-      '<div class="gearCell gearStatCell gearBasic"><select data-k="main2"></select><b class="gearStatValue" data-value="main2">—</b></div>'+
+      '<header class="gearCardHeader"><strong>'+slot+'</strong><small class="exMark"></small></header>'+
+      '<label class="gearField gearName"><span>Gear</span><select data-gear aria-label="'+slot+' gear">'+gearCatalogOptions(slot,g.catalogId||"")+"</select></label>"+
+      '<label class="gearField gearTier"><span>Tier</span><select data-k="tier">'+tierOptions()+"</select></label>"+
+      '<div class="gearField"><span>Refinement</span><div class="refineGroup">'+refs+"</div></div>"+
+      '<div class="gearField"><span>Exclusive</span><div class="exclusiveValue"><span>-</span><b>-</b></div></div>'+
+      '<label class="gearField gearBasic"><span>Basic 1</span><div class="gearStatControl"><select data-k="main1"></select><b class="gearStatValue" data-value="main1">—</b></div></label>'+
+      '<label class="gearField gearBasic"><span>Basic 2</span><div class="gearStatControl"><select data-k="main2"></select><b class="gearStatValue" data-value="main2">—</b></div></label>'+
       subs+
-      '<div class="gearCell gearSlotName"><span>'+slot+'</span><small class="exMark"></small></div><div class="gearPreview"></div>';
+      '<div class="gearPreview"></div>';
+
     grid.appendChild(col);
     const tier=col.querySelector('[data-k="tier"]');
     if(Array.from(tier.options).some(function(o){return o.value===g.tier;}))tier.value=g.tier;

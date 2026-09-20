@@ -363,22 +363,104 @@ async function loadData(){
 }
 
 function setup(){
-  const options=characters.map(function(c){return "<option value=\""+c.__id+"\">"+c.Name+"</option>";}).join("");
-  $("#character").innerHTML=options;
-  const start=characters.some(function(c){return c.Name==="Tyr";})?"tyr":characters[0].__id;
-  $("#character").value=start;
+  const options=characters.slice().sort(function(a,b){return a.Name.localeCompare(b.Name);}).map(function(c){
+    return "<option value=\""+c.__id+"\">"+c.Name+"</option>";
+  }).join("");
+  $("#character").innerHTML='<option value=""></option>'+options;
+  $("#character").value="";
+  $("#costume").innerHTML="";
+  $("#costume").disabled=true;
   fillProgressionSelects();
-  applyCharacterDefaultGearTiers();
-  buildGearUI();
   wire();
-  updateLevelOptions();
-  updateCostumeOptions();
-  syncCostumeUpgradeToCalculator();
-  render();
+  initSearchableSelect("character");
+  initSearchableSelect("costume");
+  showBlankSelectionState();
   const actualCostumeCount=costumes.filter(function(x){return !x.is_basic_attack;}).length;
   const gearCount=new Set(gearCatalog.map(function(x){return x.weapon_id;})).size;
   $("#dataStatus").textContent=catalogSource+" · "+characters.length+" characters · "+actualCostumeCount+" costumes + Basic Attack"+(gearCount?" · "+gearCount+" gears":" · gear catalog unavailable");
-  updateCatalogCount();
+}
+function searchableParts(id){
+  return {
+    select:$("#"+id),
+    input:$("#"+id+"Search"),
+    menu:$("#"+id+"SearchMenu"),
+    wrap:$("#"+id+"SearchWrap")
+  };
+}
+function renderSearchableMenu(id,query){
+  const p=searchableParts(id);
+  if(!p.select||!p.menu)return;
+  const q=String(query||"").trim().toLowerCase();
+  const rows=Array.from(p.select.options).filter(function(o){
+    return o.value && (!q || o.textContent.toLowerCase().includes(q));
+  });
+  p.menu.innerHTML=rows.length?rows.map(function(o){
+    return '<button type="button" class="searchSelectOption" data-search-value="'+escapeHtml(o.value)+'">'+escapeHtml(o.textContent)+'</button>';
+  }).join(""):'<div class="searchSelectOption searchSelectEmpty">No matches</div>';
+}
+function syncSearchableSelect(id){
+  const p=searchableParts(id);
+  if(!p.select||!p.input)return;
+  const selected=p.select.options[p.select.selectedIndex];
+  p.input.value=selected&&selected.value?selected.textContent:"";
+  p.input.disabled=!!p.select.disabled;
+  renderSearchableMenu(id,"");
+}
+function initSearchableSelect(id){
+  const p=searchableParts(id);
+  if(!p.select||!p.input||!p.menu||!p.wrap)return;
+  p.input.addEventListener("focus",function(){
+    if(p.input.disabled)return;
+    renderSearchableMenu(id,p.input.value);
+    p.wrap.classList.add("open");
+  });
+  p.input.addEventListener("input",function(){
+    renderSearchableMenu(id,p.input.value);
+    p.wrap.classList.add("open");
+  });
+  p.input.addEventListener("keydown",function(e){
+    if(e.key==="Escape"){p.wrap.classList.remove("open");p.input.value=(p.select.selectedOptions[0]?.textContent)||"";return;}
+    if(e.key==="Enter"){
+      const first=p.menu.querySelector("[data-search-value]");
+      if(first){e.preventDefault();first.click();}
+    }
+  });
+  p.menu.addEventListener("mousedown",function(e){
+    const option=e.target.closest("[data-search-value]");
+    if(!option)return;
+    e.preventDefault();
+    p.select.value=option.dataset.searchValue;
+    p.input.value=option.textContent;
+    p.wrap.classList.remove("open");
+    p.select.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+  document.addEventListener("mousedown",function(e){
+    if(!p.wrap.contains(e.target))p.wrap.classList.remove("open");
+  });
+  syncSearchableSelect(id);
+}
+function showBlankSelectionState(){
+  $("#character").value="";
+  $("#costume").innerHTML="";
+  $("#costume").disabled=true;
+  syncSearchableSelect("character");
+  syncSearchableSelect("costume");
+  $("#elementSigil").textContent="";
+  $("#rarityBadge").textContent="";
+  $("#catalogCount").textContent="—";
+  $("#gearGrid").innerHTML="";
+  $("#portraitBox").classList.remove("hasPortrait");
+  $("#costumePortrait").removeAttribute("src");
+  $("#portraitInitial").textContent="?";
+  $("#portraitElement").textContent="Select";
+  ["sumHp","sumAtk","sumCr","sumCdmg","leftDef","leftMres","leftProperty","leftResist",
+   "damageNormal","damageAverage","damageCritical","sumDamage"].forEach(function(id){
+    const el=$("#"+id);if(el)el.textContent="—";
+  });
+  $("#skillTitle").textContent="Select a character";
+  $("#skillDescription").textContent="Search for a character above to begin.";
+  $("#skillProgression").innerHTML="";
+  $("#targetBadge").textContent="—";
 }
 function fillProgressionSelects(){
   ["engraveLife","engraveStrength","engravePerseverance"].forEach(function(id){
@@ -419,7 +501,8 @@ function updateCostumePortrait(){
   const box=$("#portraitBox"),img=$("#costumePortrait"),costume=getCostume();
   if(!box||!img)return;
   const mediaId=costumeMediaId(costume);
-  $("#portraitInitial").textContent=(getChar().Name||"?").slice(0,1).toUpperCase();
+  const selectedChar=getChar();
+  $("#portraitInitial").textContent=selectedChar?(selectedChar.Name||"?").slice(0,1).toUpperCase():"?";
   if(!mediaId){
     box.classList.remove("hasPortrait");
     img.dataset.mediaId="";
@@ -559,17 +642,19 @@ function updatePotentialSheet(){
 }
 
 function attackType(c){return Number(c.ATK)>0?"physical":"magic";}
-function getChar(){return characters.find(function(c){return c.__id===$("#character").value;})||characters[0];}
+function getChar(){return characters.find(function(c){return c.__id===$("#character").value;})||null;}
 function isBasicAttack(){return $("#costume")&&$("#costume").value==="__basic__";}
 function getCostume(){
   if(isBasicAttack()){
     const c=getChar();
+    if(!c)return null;
     return {id:"__basic__",character_id:c.__id,name:"Basic Attack",skill_name:"Basic Attack",target:c.TARGET||"Very Front",is_basic_attack:true};
   }
   return costumes.find(function(c){return c.id===$("#costume").value;})||null;
 }
 function updateCatalogCount(){
   const c=getChar();
+  if(!c){if($("#catalogCount"))$("#catalogCount").textContent="—";return;}
   const n=costumes.filter(function(x){return x.character_id===c.__id&&!x.is_basic_attack;}).length;
   if($("#catalogCount"))$("#catalogCount").textContent=n+" costume"+(n===1?"":"s")+" + Basic";
 }
@@ -660,6 +745,7 @@ function syncAllExclusiveGear(){
 }
 function applyCharacterDefaultGearTiers(){
   const c=getChar();
+  if(!c)return;
   Object.keys(gearState).forEach(function(slot){
     const g=gearState[slot];
     g.tier="UR4";
@@ -745,21 +831,33 @@ function refreshMainOptions(){
   });
 }
 function updateLevelOptions(){
-  const c=getChar(),max=MAX_LEVEL[Number(c.RARITY)]||80,el=$("#level"),prev=el.value;
+  const c=getChar(),el=$("#level");
+  if(!c)return;
+  const max=MAX_LEVEL[Number(c.RARITY)]||80,prev=el.value;
   const opts=[20,40,60,80].filter(function(x){return x<=max;});
   el.innerHTML=opts.map(function(x){return '<option value="'+x+'">'+x+"</option>";}).join("")+'<option value="MAX">MAX</option>';
   el.value=prev&&Array.from(el.options).some(function(o){return o.value===prev;})?prev:"MAX";
 }
 function updateCostumeOptions(){
   const c=getChar(),el=$("#costume"),prev=el.value;
-  const rows=costumes.filter(function(x){return x.character_id===c.__id&&!x.is_basic_attack;});
-  el.innerHTML='<option value="__basic__">Basic Attack</option>'+rows.map(function(x){return '<option value="'+x.id+'">'+x.name+"</option>";}).join("");
-  if(prev==="__basic__")el.value="__basic__";
-  else if(prev&&rows.some(function(x){return x.id===prev;}))el.value=prev;
+  if(!c){
+    el.innerHTML="";
+    el.disabled=true;
+    syncSearchableSelect("costume");
+    updateCatalogCount();
+    return;
+  }
+  const rows=costumes.filter(function(x){return x.character_id===c.__id&&!x.is_basic_attack;})
+    .sort(function(a,b){return a.name.localeCompare(b.name);});
+  el.disabled=false;
+  el.innerHTML=rows.map(function(x){return '<option value="'+x.id+'">'+x.name+"</option>";}).join("")+
+    '<option value="__basic__">Basic Attack</option>';
+  if(prev&&rows.some(function(x){return x.id===prev;}))el.value=prev;
   else{
     const preferred=rows.find(function(x){return c.Name==="Tyr"&&x.name==="Innocent Bunny";});
-    el.value=preferred?preferred.id:"__basic__";
+    el.value=preferred?preferred.id:(rows[0]?rows[0].id:"__basic__");
   }
+  syncSearchableSelect("costume");
   updateCatalogCount();
   updateBurstOptions();
   syncCalculationMode();
@@ -789,6 +887,7 @@ function resetBuild(){
 }
 function wire(){
   function handleControlChange(e){
+    if(e.target.dataset&&e.target.dataset.searchInput)return;
     const card=e.target.closest(".gearCard");
     if(card){
       const slot=card.dataset.slot,g=gearState[slot];
@@ -813,6 +912,8 @@ function wire(){
       render();return;
     }
     if(e.target.id==="character"){
+      syncSearchableSelect("character");
+      if(!e.target.value){showBlankSelectionState();return;}
       potentialCharacterId="";bondedCostumeId="";permanentPotentialLevels={};
       updateLevelOptions();
       updateCostumeOptions();
@@ -821,7 +922,7 @@ function wire(){
       render();
       return;
     }
-    if(e.target.id==="costume"){updateBurstOptions();syncCalculationMode();render();return;}
+    if(e.target.id==="costume"){syncSearchableSelect("costume");updateBurstOptions();syncCalculationMode();render();return;}
     if(e.target.id==="burst"){syncCostumeUpgradeToCalculator();render();return;}
     if(e.target.id==="dupe"){syncCostumeUpgradeToCalculator();render();return;}
     if(e.target.id==="bondedCostume"){bondedCostumeId=e.target.value;render();return;}
@@ -1279,7 +1380,7 @@ function updateCostumePanel(r){
     : (burstRows.length?"Burst available · choose a stage above or compare all stages in Skill.":"No Burst data for this costume.");
 }
 function render(){
-  if(!characters.length)return;
+  if(!characters.length||!getChar())return;
   const r=compute(),c=r.c,atkPct=r.atkKey+"%";
   $("#rarityBadge").textContent="★".repeat(Number(c.RARITY)||5);
   $("#elementSigil").textContent=(c.ELE||"S").slice(0,1);$("#portraitInitial").textContent=(c.Name||"?").slice(0,1).toUpperCase();$("#portraitElement").textContent=c.ELE||"Element";updateCostumePortrait();

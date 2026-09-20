@@ -1778,3 +1778,989 @@ body{
     grid-auto-rows:170px;
   }
 }
+
+/* Modern app redesign — intentionally overrides the old spreadsheet styling */
+:root{
+  --page:#f4f6f8;
+  --sheet:#ffffff;
+  --cell:#ffffff;
+  --cell-alt:#f7f8fa;
+  --ink:#1f2937;
+  --muted:#6b7280;
+  --line:#e5e7eb;
+  --line-strong:#d1d5db;
+  --header:#111827;
+  --header-ink:#ffffff;
+  --mint:#dcfce7;
+  --cyan:#e0f2fe;
+  --gold:#fef3c7;
+  --blue:#dbeafe;
+  --green:#10b981;
+  --accent:#10b981;
+  --input:#ffffff;
+}
+:root[data-theme="dark"]{
+  --page:#0f141a;
+  --sheet:#171d24;
+  --cell:#1b222b;
+  --cell-alt:#202832;
+  --ink:#edf2f7;
+  --muted:#98a2b3;
+  --line:#2b3643;
+  --line-strong:#3a4654;
+  --header:#0c1117;
+  --header-ink:#ffffff;
+  --mint:#17382b;
+  --cyan:#193746;
+  --gold:#443814;
+  --blue:#1d3550;
+  --input:#111820;
+}
+html,body{
+  min-width:0;
+  background:var(--page);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body{
+  padding:0;
+  font-size:13px;
+  line-height:1.4;
+}
+.sheetShell{
+  width:min(1440px,calc(100% - 28px));
+  min-width:0;
+  max-width:1440px;
+  margin:0 auto;
+  padding:0 0 26px;
+}
+.topBar{
+  position:sticky;
+  top:0;
+  z-index:120;
+  min-height:56px;
+  height:auto;
+  margin:0 -14px 18px;
+  padding:9px 16px;
+  border:0;
+  border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--sheet) 94%,transparent);
+  color:var(--ink);
+  box-shadow:0 1px 10px rgba(15,23,42,.05);
+  backdrop-filter:blur(14px);
+}
+.brandMark{
+  width:30px;
+  height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:9px;
+  background:#10b981;
+  color:#fff;
+  font-size:18px;
+  transform:none;
+}
+.brand>div{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:1px;
+}
+.brand strong{font-size:15px;color:var(--ink)}
+.brand small{font-size:10px;color:var(--muted)}
+.topActions{gap:7px}
+button,.buttonLike{
+  border:1px solid var(--line);
+  background:var(--cell);
+  color:var(--ink);
+  border-radius:8px;
+  padding:6px 10px;
+  font-size:11px;
+  font-weight:700;
+  box-shadow:none;
+}
+button:hover,.buttonLike:hover{
+  filter:none;
+  background:var(--cell-alt);
+}
+.topActions button,.topActions .buttonLike{
+  min-height:32px;
+  padding:5px 9px;
+  background:var(--cell);
+  color:var(--ink);
+  border-color:var(--line);
+}
+.themeDock{
+  padding:2px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--cell-alt);
+}
+.themeDock button{
+  min-height:26px;
+  border:0;
+  padding:3px 8px;
+  background:transparent;
+  color:var(--muted);
+  font-size:10px;
+}
+.themeDock button.active{
+  background:var(--cell);
+  color:var(--ink);
+  border:0;
+  box-shadow:0 1px 3px rgba(15,23,42,.12);
+}
+.guidedLayout{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  margin-top:0;
+}
+.guideSection{
+  display:flex;
+  flex-direction:column;
+  gap:9px;
+}
+.guideHeader{
+  display:block;
+  padding:0 2px;
+}
+.stepBadge{display:none!important}
+.guideHeader h2{
+  margin:0;
+  font-size:17px;
+  line-height:1.2;
+  font-weight:800;
+  letter-spacing:-.01em;
+}
+.guideHeader p{
+  margin:2px 0 0;
+  font-size:11px;
+  color:var(--muted);
+}
+.sheetPanel{
+  background:var(--sheet);
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow:0 4px 16px rgba(15,23,42,.04);
+}
+.overviewGrid{
+  display:grid;
+  grid-template-columns:minmax(230px,.78fr) minmax(330px,1.15fr) minmax(300px,1fr);
+  gap:12px;
+  align-items:stretch;
+}
+.choiceCard,.statsCard,.settingsCard{
+  padding:13px;
+}
+.choiceCard>h3,.statsCard>h3,.settingsCard>h3{
+  margin:0 0 9px;
+  font-size:13px;
+  font-weight:800;
+}
+.sectionHint{
+  margin:-3px 0 9px;
+  font-size:10px;
+  color:var(--muted);
+}
+.leftPortrait{
+  width:min(100%,230px);
+  margin:0 auto 11px;
+  border:0;
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(15,23,42,.12);
+}
+.portraitPlaceholder small{
+  height:28px;
+  background:linear-gradient(transparent,rgba(10,15,20,.86));
+  font-size:10px;
+  text-transform:none;
+  letter-spacing:0;
+  font-weight:700;
+}
+.portraitPickHint{
+  border:0;
+  border-radius:8px;
+  background:rgba(15,23,42,.74);
+  min-height:28px;
+  font-size:9px;
+}
+.leftBuildControls{
+  padding:0;
+  border:0;
+  background:transparent;
+}
+.leftBuildControls label>span,
+.leftCatalog span{
+  display:block;
+  margin-bottom:4px;
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.searchSelect>input{
+  height:36px;
+  min-height:36px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--input);
+  color:var(--ink);
+  padding:0 30px 0 10px;
+  font-size:12px;
+  font-weight:600;
+}
+.searchSelect::after{
+  top:8px;
+  right:10px;
+  font-size:11px;
+}
+.searchSelectMenu{
+  top:calc(100% + 5px);
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--sheet);
+  box-shadow:0 12px 32px rgba(15,23,42,.18);
+  overflow:hidden auto;
+}
+.searchSelectOption{
+  min-height:34px;
+  padding:7px 10px;
+  border-bottom:1px solid var(--line);
+  font-size:11px;
+}
+.searchSelectOption:hover,
+.searchSelectOption.active{
+  background:var(--cell-alt);
+}
+.leftCatalog{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:34px;
+  margin-top:8px;
+  padding:7px 9px;
+  border:0;
+  border-radius:9px;
+  background:var(--cell-alt);
+}
+.leftCatalog span{
+  margin:0;
+  text-transform:none;
+  letter-spacing:0;
+}
+.leftCatalog strong{font-size:11px}
+.statTable{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  border:0;
+  border-radius:0;
+  overflow:visible;
+}
+.statRow{
+  min-height:48px;
+  display:grid;
+  grid-template-columns:26px minmax(0,1fr) auto;
+  align-items:center;
+  padding:7px 9px;
+  border:0;
+  border-radius:9px;
+  background:var(--cell-alt);
+  font-size:11px;
+}
+.statRow>span:first-child{
+  color:var(--muted);
+  font-size:14px;
+}
+.statRow b{
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+}
+.statRow strong{
+  padding:0;
+  font-size:14px;
+  font-weight:800;
+}
+.settingsGrid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+.friendlyField{
+  gap:4px;
+}
+.friendlyField>span,
+.friendlyToggle span{
+  color:var(--muted);
+  font-size:10px;
+  font-weight:700;
+}
+.friendlyField input,
+.friendlyField select,
+.friendlyNumber input{
+  width:100%;
+  min-height:34px;
+  height:34px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--input);
+  padding:0 8px;
+  font-size:12px;
+}
+.friendlyNumber{
+  position:relative;
+}
+.friendlyNumber em{
+  position:absolute;
+  right:7px;
+  top:8px;
+  padding:0;
+  color:var(--muted);
+  font-size:10px;
+}
+.friendlyNumber input{padding-right:22px}
+.friendlyToggle{
+  min-height:34px;
+  padding:6px 8px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--cell-alt);
+}
+.friendlyToggle input{
+  width:16px;
+  height:16px;
+}
+.settingsDivider{
+  padding-top:8px;
+  border-top:1px solid var(--line);
+  color:var(--muted);
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.resultStrip{
+  gap:8px;
+  margin-top:10px;
+}
+.resultStrip>div{
+  min-height:52px;
+  border:0;
+  border-radius:9px;
+  background:var(--cell-alt);
+}
+.resultStrip span{font-size:9px}
+.resultStrip b{font-size:16px}
+.largeSecondaryButton{
+  min-height:34px;
+  margin-top:9px;
+  border-radius:8px;
+  font-size:11px;
+}
+.bonusPanel{
+  overflow:hidden;
+  box-shadow:none;
+}
+.bonusPanel summary{
+  min-height:44px;
+  padding:8px 12px;
+  font-size:12px;
+}
+.bonusPanel summary small{font-size:10px}
+.bonusGrid{
+  gap:12px;
+  padding:0 12px 12px;
+}
+.miniSection{
+  border:0;
+  border-radius:9px;
+  background:var(--cell-alt);
+  padding:8px;
+}
+.miniSection h3{
+  min-height:0;
+  margin:0 0 6px;
+  padding:0;
+  border:0;
+  background:transparent;
+  font-size:11px;
+}
+.miniRow{
+  min-height:34px;
+  grid-template-columns:24px minmax(0,1fr) minmax(88px,.7fr);
+  border:0;
+  border-top:1px solid var(--line);
+  font-size:10px;
+}
+.cellInput input{
+  height:30px;
+  min-height:30px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--input);
+  font-size:11px;
+}
+.cellInput em{top:7px}
+
+/* Gear cards */
+.gearSheet{
+  overflow-x:auto;
+  padding:12px;
+  background:transparent;
+  box-shadow:none;
+}
+.gearGrid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(205px,1fr));
+  gap:10px;
+  min-width:1080px;
+}
+.gearLabels{display:none!important}
+.gearCard{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  padding:11px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:var(--sheet);
+  box-shadow:0 3px 12px rgba(15,23,42,.04);
+}
+.gearCardHeader{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-height:30px;
+  margin:-2px 0 5px;
+  padding-bottom:7px;
+  border-bottom:1px solid var(--line);
+}
+.gearCardHeader strong{
+  font-size:13px;
+  font-weight:800;
+}
+.exMark{
+  margin:0;
+  padding:2px 6px;
+  border-radius:999px;
+  background:#dcfce7;
+  color:#047857;
+  font-size:9px;
+  font-weight:800;
+}
+.gearField{
+  display:grid;
+  gap:4px;
+  margin-top:7px;
+}
+.gearField>span{
+  color:var(--muted);
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.gearField select{
+  width:100%;
+  min-width:0;
+  height:32px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--input);
+  color:var(--ink);
+  padding:0 7px;
+  font-size:11px;
+  font-weight:600;
+  text-align:left;
+}
+.gearName select{
+  background:var(--input);
+  color:var(--ink);
+}
+.gearTier select,
+.gearTier:not(.exclusiveTier) select{
+  background:var(--input);
+  color:var(--ink);
+}
+.gearTier.exclusiveTier select{
+  border-color:#86efac;
+  background:#f0fdf4;
+  color:#166534;
+}
+:root[data-theme="dark"] .gearTier.exclusiveTier select{
+  border-color:#225b3d;
+  background:#143326;
+  color:#a7f3d0;
+}
+.refineGroup{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+}
+.refineGroup select,
+.refineGroup select:last-child{
+  height:30px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--cell-alt);
+  color:var(--ink);
+  text-align:center;
+}
+.exclusiveValue{
+  min-height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:7px;
+  padding:6px 8px;
+  border-radius:8px;
+  background:var(--cell-alt);
+  font-size:10px;
+}
+.exclusiveValue b{font-size:11px}
+.gearStatControl{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 66px;
+  gap:6px;
+  align-items:center;
+}
+.gearStatValue{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  min-height:32px;
+  padding:0 7px;
+  border-radius:8px;
+  background:var(--cell-alt);
+  font-size:10px;
+  font-weight:800;
+}
+.gearBasic select,.gearSub select,
+:root[data-theme="dark"] .gearBasic select,
+:root[data-theme="dark"] .gearSub select{
+  background:var(--input);
+  color:var(--ink);
+}
+.gearPreview{display:none}
+
+/* Potentials */
+.potentialSheet{
+  padding:12px;
+  overflow:hidden;
+}
+.potentialProgressGrid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  border:0;
+}
+.potentialProgressCell{
+  display:grid;
+  grid-template-rows:28px 32px 34px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:var(--cell);
+}
+.potentialProgressHead{
+  border:0;
+  background:var(--cell-alt);
+}
+.potentialProgressHead b{font-size:10px}
+.potentialProgressCell>strong{font-size:14px}
+.potentialProgressControl{
+  grid-template-columns:22px 1fr;
+  border:0;
+  border-top:1px solid var(--line);
+  padding:3px 5px;
+}
+.potentialProgressControl input,
+.skillPotentialStrip input{
+  width:16px;
+  height:16px;
+}
+.potentialProgressControl select{
+  min-height:26px;
+  height:26px;
+  border:0;
+  background:transparent;
+  font-size:10px;
+}
+.potentialSubheading{
+  margin:12px 0 7px;
+  font-size:12px;
+}
+.skillPotentialStrip{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  border:0;
+}
+.skillPotentialStrip label{
+  min-height:78px;
+  display:grid;
+  grid-template-rows:36px 20px 18px;
+  padding:7px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--cell-alt);
+}
+.skillPotentialIcon,
+.skillPotentialIcon img{
+  width:34px;
+  height:34px;
+}
+.skillPotentialStrip b{font-size:10px}
+.potentialMatrixHeaders{
+  display:grid;
+  grid-template-columns:38% 62%;
+  gap:10px;
+  margin-top:12px;
+  border:0;
+}
+.potentialMatrixHeaders strong{
+  min-height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  padding:0 8px;
+  border:0!important;
+  border-radius:8px;
+  background:var(--cell-alt);
+  color:var(--ink);
+  font-size:10px;
+}
+.potentialMatrix{
+  display:grid;
+  grid-template-columns:38% 62%;
+  gap:10px;
+  min-height:0;
+  margin-top:6px;
+  border:0;
+}
+.bondPotentialRows,
+.permanentPotentialRows{
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:var(--cell);
+}
+.bondPotentialRows{border-right:1px solid var(--line)}
+.bondPotentialRow,
+.permanentPotentialRow{
+  min-height:34px;
+  border:0;
+  border-bottom:1px solid var(--line);
+  font-size:10px;
+}
+.bondPotentialRow:last-child,
+.permanentPotentialRow:last-child{border-bottom:0}
+.bondPotentialRow{
+  grid-template-columns:minmax(44px,1fr) 58px 38px;
+}
+.permanentPotentialRow{
+  grid-template-columns:minmax(110px,1.6fr) 52px 62px 38px;
+}
+.bondPotentialRow b{padding-left:8px;font-size:10px}
+.bondPotentialRow select,
+.permanentPotentialRow select{
+  width:32px;
+  height:25px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--input);
+  font-size:10px;
+}
+.bondedToRow{
+  min-height:40px;
+  margin-top:9px;
+  grid-template-columns:92px 1fr;
+  border:0;
+  border-radius:9px;
+  background:var(--cell-alt);
+}
+.bondedToRow strong{
+  padding-left:10px;
+  font-size:10px;
+}
+.bondedToRow select{
+  width:calc(100% - 8px);
+  min-height:30px;
+  height:30px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:var(--input);
+  font-size:10px;
+}
+
+/* Skill and damage */
+.skillSheet{
+  padding:12px;
+  overflow:hidden;
+}
+.skillTop{
+  min-height:0;
+}
+.skillTitleRow{
+  min-height:38px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  border:0;
+  border-bottom:1px solid var(--line);
+}
+.skillTitleRow strong{
+  justify-content:flex-start;
+  padding:0 4px;
+  font-size:15px;
+}
+.skillTitleRow span{
+  min-width:90px;
+  border:0;
+  color:var(--muted);
+  font-size:10px;
+}
+.skillMeta{
+  min-height:38px;
+  border:0;
+  border-bottom:1px solid var(--line);
+}
+.skillMeta label{
+  font-size:10px;
+}
+.skillMeta input{
+  min-height:28px;
+  height:28px;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--input);
+  font-size:11px;
+}
+.skillMain p{
+  margin:0;
+  padding:9px 4px;
+  background:transparent;
+  font-size:11px;
+  line-height:1.45;
+}
+.skillProgression{
+  padding:0 0 8px;
+}
+.upgradeTable{
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:9px;
+  font-size:10px;
+}
+.upgradeTable th,.upgradeTable td{
+  border:0;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:6px 5px;
+}
+.upgradeTable tr>*:last-child{border-right:0}
+.upgradeTable tbody tr:last-child>*{border-bottom:0}
+.upgradeTable thead th{
+  background:var(--cell-alt);
+  color:var(--ink);
+  font-size:9px;
+}
+.upgradeTable tbody th{
+  background:var(--cell-alt);
+}
+.upgradeTable .averageRow{
+  background:color-mix(in srgb,#dcfce7 55%,var(--cell));
+}
+.upgradeTable .criticalRow{
+  background:color-mix(in srgb,#dbeafe 45%,var(--cell));
+}
+.burstTableWrap{
+  margin-top:8px;
+}
+.skillOptions{
+  min-height:34px;
+  margin-top:6px;
+  padding:0 8px;
+  border:0;
+  border-radius:8px 8px 0 0;
+  background:var(--cell-alt);
+  font-size:10px;
+}
+.upgradeDamageComparison{
+  border:1px solid var(--line);
+  border-top:0;
+  background:var(--cell);
+}
+.upgradeDamageMiniTable{
+  min-width:520px;
+  font-size:10px;
+}
+.upgradeDamageMiniTable th,
+.upgradeDamageMiniTable td{
+  height:30px;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:4px;
+}
+.upgradeDamageMiniTable thead th,
+.upgradeDamageMiniTable tbody th{
+  background:var(--cell-alt);
+}
+.damageReviewRow{
+  min-height:38px;
+  padding:7px 9px;
+  border:1px solid var(--line);
+  border-top:0;
+  background:var(--cell-alt);
+}
+.damageReviewRow small{
+  font-size:10px;
+  line-height:1.4;
+}
+.skillFooter{
+  min-height:40px;
+  margin-top:8px;
+  padding:0 9px;
+  border:0;
+  border-radius:9px;
+  background:var(--header);
+  color:#fff;
+  font-size:10px;
+}
+.skillFooter b{font-size:15px}
+.skillFooter .tag{
+  background:rgba(255,255,255,.12);
+  color:#fff;
+}
+.sheetFooter{
+  margin-top:20px;
+  padding:12px 2px 0;
+  border:0;
+  color:var(--muted);
+  font-size:9px;
+}
+
+/* Modal polish */
+.characterModalPanel{
+  width:min(920px,94vw);
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--sheet);
+}
+.characterModalHeader{
+  min-height:50px;
+  padding:8px 10px 8px 14px;
+  background:var(--sheet);
+  color:var(--ink);
+  border-bottom:1px solid var(--line);
+}
+.characterModalHeader strong{font-size:15px}
+.characterModalHeader small{font-size:10px;color:var(--muted)}
+.characterModalHeader button{
+  width:32px;
+  height:32px;
+  background:var(--cell-alt);
+  color:var(--ink);
+}
+.characterModalTools{
+  grid-template-columns:minmax(210px,1.3fr) minmax(250px,1fr) minmax(170px,.7fr);
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+  background:var(--sheet);
+}
+.characterModalTools>input{
+  height:36px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:var(--input);
+  font-size:12px;
+}
+.characterFilterGroup>span{font-size:9px}
+.characterFilterChips button{
+  min-height:28px;
+  padding:3px 9px;
+  border-radius:999px;
+  font-size:10px;
+}
+.characterFilterChips button.active{
+  background:#111827;
+  border-color:#111827;
+}
+.characterCardGrid{
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  grid-auto-rows:155px;
+  gap:10px;
+  padding:12px;
+  background:var(--sheet);
+}
+.characterCard{
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(15,23,42,.08);
+}
+.characterCardMeta strong{font-size:11px}
+.characterCardMeta span{font-size:8px}
+
+@media(max-width:1100px){
+  .overviewGrid{
+    grid-template-columns:1fr 1fr;
+  }
+  .settingsCard{grid-column:1/-1}
+  .gearGrid{
+    grid-template-columns:repeat(5,205px);
+  }
+}
+@media(max-width:760px){
+  .sheetShell{
+    width:min(100% - 16px,1440px);
+  }
+  .topBar{
+    margin:0 -8px 14px;
+    align-items:center;
+    flex-direction:row;
+  }
+  .brand small{display:none}
+  .topActions .buttonLike{display:none}
+  .overviewGrid,
+  .bonusGrid{
+    grid-template-columns:1fr;
+  }
+  .settingsCard{grid-column:auto}
+  .statTable{
+    grid-template-columns:1fr 1fr;
+  }
+  .potentialProgressGrid{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .potentialMatrixHeaders,
+  .potentialMatrix{
+    grid-template-columns:1fr;
+  }
+  .potentialMatrixHeaders strong:nth-child(2){margin-top:3px}
+  .characterModalTools{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:480px){
+  .topActions{gap:3px}
+  .themeDock{display:none}
+  .statTable{
+    grid-template-columns:1fr;
+  }
+  .settingsGrid,
+  .resultStrip{
+    grid-template-columns:1fr;
+  }
+  .potentialProgressGrid,
+  .skillPotentialStrip{
+    grid-template-columns:1fr;
+  }
+  .choiceCard,.statsCard,.settingsCard,
+  .gearSheet,.potentialSheet,.skillSheet{
+    padding:9px;
+  }
+}

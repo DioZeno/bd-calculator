@@ -715,3 +715,20 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   padding:0 8px;
 }
 .legacyPotentialHidden{display:none!important}
+
+.potentialProgressCell{grid-template-rows:34px 22px 24px}
+.potentialProgressHead{gap:3px}
+.potentialGlyphImage{
+  width:30px;
+  height:30px;
+  border:0;
+  background:transparent;
+  flex:0 0 30px;
+}
+.potentialGlyphImage img{
+  width:30px;
+  height:30px;
+  object-fit:contain;
+  display:block;
+}
+:root[data-theme="dark"] .potentialGlyphImage img{filter:invert(1)}

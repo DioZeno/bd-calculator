@@ -386,6 +386,14 @@ function fillProgressionSelects(){
     el.value="10";
   });
 }
+function skillPotentialIconPath(type){
+  const t=String(type||"").trim();
+  if(t==="SP")return "./assets/potential-sp.png";
+  if(t==="CD")return "./assets/potential-cd.png";
+  if(t==="Range"||t==="Tiles")return "./assets/potential-tiles.png";
+  if(t==="NEW")return "./assets/potential-new.png";
+  return "./assets/potential-skill.png";
+}
 function potentialRecord(costumeId){
   return costumePotentials.find(function(p){return p.costume_id===costumeId;})||null;
 }
@@ -450,10 +458,16 @@ function updatePotentialSheet(){
   const costume=getCostume(),sp=costume&&!costume.is_basic_attack?potentialRecord(costume.id):null;
   [1,2,3].forEach(function(i){
     const type=sp?sp["skill_"+i+"_type"]:null;
-    const label=$("#skillPot"+i+"Type"),box=$("#skillPot"+i);
+    const label=$("#skillPot"+i+"Type"),box=$("#skillPot"+i),icon=$("#skillPot"+i+"Icon");
     label.textContent=type||"—";
     box.disabled=!type;
     if(!type)box.checked=false;
+    if(icon){
+      icon.src=skillPotentialIconPath(type);
+      icon.alt=type?type+" Skill Potential":"No Skill Potential";
+      icon.title=type||"";
+      icon.style.opacity=type?"1":".25";
+    }
   });
 
   const rows=potentialCostumesForCharacter(c);

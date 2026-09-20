@@ -462,8 +462,11 @@ function showBlankSelectionState(){
     const el=$("#"+id);if(el)el.textContent="—";
   });
   $("#skillTitle").textContent="Select a character";
+  if($("#skillSpValue"))$("#skillSpValue").textContent="—";
+  if($("#skillCdValue"))$("#skillCdValue").textContent="—";
   if($("#skillMultDisplay"))$("#skillMultDisplay").textContent="—";
   if($("#hitsDisplay"))$("#hitsDisplay").textContent="—";
+  setSkillRangeDisplay(null);
   $("#skillDescription").textContent="Search for a character above to begin.";
   $("#skillProgression").innerHTML="";
   $("#targetBadge").textContent="—";
@@ -1374,6 +1377,42 @@ function escapeHtml(value){
     .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
+function rangeImageUrl(code){
+  return code?BD2DB_IMAGE_HOST+"/ranges_new/new/"+encodeURIComponent(code)+".webp":"";
+}
+function activeSkillRangeCode(costume){
+  if(!costume||costume.is_basic_attack)return "";
+  const p=potentialRecord(costume.id);
+  const rangeEnabled=[1,2,3].some(function(i){
+    const type=p&&String(p["skill_"+i+"_type"]||"").toLowerCase();
+    const box=$("#skillPot"+i);
+    return type==="range"&&box&&box.checked;
+  });
+  return rangeEnabled&&costume.skill_range_code?costume.skill_range_code:(costume.range_code||"");
+}
+function rangeImageHtml(code,className,label){
+  if(!code)return '<span class="rangeUnavailable">—</span>';
+  return '<img class="'+escapeHtml(className||"rangeThumb")+'" src="'+escapeHtml(rangeImageUrl(code))+'" alt="'+escapeHtml(label||"Skill range")+'" referrerpolicy="no-referrer">';
+}
+function setSkillRangeDisplay(costume){
+  const img=$("#skillRangeImage"),label=$("#skillRangeLabel");
+  if(!img||!label)return;
+  const code=activeSkillRangeCode(costume);
+  if(!code){
+    img.removeAttribute("src");
+    img.classList.add("rangeImageMissing");
+    label.textContent="Range unavailable";
+    return;
+  }
+  img.classList.remove("rangeImageMissing");
+  img.src=rangeImageUrl(code);
+  const p=potentialRecord(costume.id);
+  const rangeActive=[1,2,3].some(function(i){
+    const box=$("#skillPot"+i);
+    return p&&String(p["skill_"+i+"_type"]||"").toLowerCase()==="range"&&box&&box.checked;
+  });
+  label.textContent=rangeActive&&costume.skill_range_code?"Range Potential":"Base Range";
+}
 function buildUpgradeDamageComparison(costume,r,allVars){
   const wrap=$("#upgradeDamageComparison"),review=$("#damageReview");
   if(!wrap||!review)return;
@@ -1503,7 +1542,10 @@ function buildUpgradeTable(costume,r,allVars){
     return '<tr class="'+(className||"")+'"><th>'+escapeHtml(label)+'</th>'+
       values.map(function(v){return '<td>'+escapeHtml(v)+'</td>';}).join("")+'</tr>';
   };
-  let html='<table class="upgradeTable"><thead><tr><th class="upgradeTitleCell"><span class="tableIconTitle"><img src="./assets/skill-upgrade-burst.png" alt="">Costume Upgrade</span></th>'+
+  const upgradeRange=activeSkillRangeCode(costume);
+  let html='<table class="upgradeTable"><thead><tr><th class="upgradeTitleCell"><span class="tableIconTitle">'+
+    rangeImageHtml(upgradeRange,"upgradeRangeThumb","Costume skill range")+
+    '<span>Costume Upgrade</span></span></th>'+
     levels.map(function(x){return '<th>+'+x+'</th>';}).join("")+'</tr></thead><tbody>';
   html+=row("SP",cols.map(function(x){return x.summary.sp==null?"—":x.summary.sp;}));
   html+=row("CD",cols.map(function(x){return x.summary.cd==null?"—":x.summary.cd+"T";}));
@@ -1530,15 +1572,17 @@ function buildBurstTable(costume,r,allVars){
   if(basePct==null)basePct=numericValue(baseSummary.damage);
   const hits=inferCostumeHits(costume);
 
+  let effectiveRange=activeSkillRangeCode(costume);
   const stages=[1,2,3].map(function(stage){
     const burst=bursts.find(function(x){return Number(x.stage)===stage;})||null;
-    if(!burst)return {stage:stage,burst:null,dmg:null};
+    if(burst&&burst.effects&&burst.effects.range_code)effectiveRange=burst.effects.range_code;
+    if(!burst)return {stage:stage,burst:null,dmg:null,rangeCode:effectiveRange};
     const bonus=burstPrimaryBonus(burst,primary);
     const canCalc=basePct!=null&&bonus!==0;
     const dmg=canCalc
       ? calculateDamageSet(r.atk,basePct+bonus,hits,r.cr,r.cdmg,r.property,r.enemy,r.dmgMult)
       : null;
-    return {stage:stage,burst:burst,dmg:dmg};
+    return {stage:stage,burst:burst,dmg:dmg,rangeCode:effectiveRange};
   });
 
   const cells=function(values,className){
@@ -1548,7 +1592,7 @@ function buildBurstTable(costume,r,allVars){
     return '<td class="'+(className||"")+'">'+escapeHtml(value==null?"—":value)+'</td>';
   };
 
-  let html='<div class="burstTableWrap"><strong class="burstTitle"><img src="./assets/skill-upgrade-burst.png" alt="">Burst</strong>'+
+  let html='<div class="burstTableWrap"><strong class="burstTitle">Burst</strong>'+
     '<table class="upgradeTable burstTable"><thead><tr><th>Burst Stage</th>'+
     stages.map(function(x){return '<th>B'+x.stage+'</th>';}).join("")+
     '</tr></thead><tbody>';
@@ -1565,6 +1609,13 @@ function buildBurstTable(costume,r,allVars){
     })),
     "burstEffectRow"
   );
+  html+=cells(
+    ['<th>Range</th>'].concat(stages.map(function(x){
+      return '<td class="burstRangeCell">'+rangeImageHtml(x.rangeCode,"burstRangeThumb","Burst B"+x.stage+" range")+'</td>';
+    })),
+    "burstRangeRow"
+  );
+
 
   html+=cells(
     ['<th>Normal</th>'].concat(stages.map(function(x){
@@ -1594,6 +1645,10 @@ function updateCostumePanel(r){
   const costume=getCostume(),c=getChar();
   if(!costume){
     $("#skillTitle").textContent="Damage Test";
+    $("#skillSpValue").textContent="—";
+    $("#skillCdValue").textContent="—";
+    $("#targetBadge").textContent="—";
+    setSkillRangeDisplay(null);
     $("#skillDescription").textContent="No costume data loaded for this character.";
     $("#skillProgression").innerHTML="";
     $("#burstInfo").textContent="No Burst data for this costume.";
@@ -1602,6 +1657,10 @@ function updateCostumePanel(r){
   if(costume.is_basic_attack){
     const type=r.atkKey==="ATK"?"Physical":"Magic";
     $("#skillTitle").textContent="Basic Attack";
+    $("#skillSpValue").textContent="+1";
+    $("#skillCdValue").textContent="—";
+    $("#hitsDisplay").textContent="1";
+    setSkillRangeDisplay(null);
     $("#skillDescription").textContent="Deal damage based on 100% of "+r.atkKey+". Gain 1 SP.";
     $("#targetBadge").textContent=c.TARGET==="Vault"?"Vault":"Very Front";
     $("#skillProgression").innerHTML=
@@ -1615,7 +1674,12 @@ function updateCostumePanel(r){
   }
 
   const allVars=costumeVariables.filter(function(x){return x.costume_id===costume.id;});
+  const maxSummary=costumeUpgradeSummary(costume,allVars,5);
   $("#skillTitle").textContent=costume.skill_name||costume.name;
+  $("#skillSpValue").textContent=maxSummary.sp==null?"—":String(maxSummary.sp);
+  $("#skillCdValue").textContent=maxSummary.cd==null?"—":String(maxSummary.cd)+" Turns";
+  $("#hitsDisplay").textContent=String(inferCostumeHits(costume));
+  setSkillRangeDisplay(costume);
   $("#skillDescription").textContent=replaceUpgradeValuesInDescription(costume,allVars,5)||"No description available.";
   $("#targetBadge").textContent=costume.target||c.TARGET||"Target";
   $("#skillProgression").innerHTML=buildUpgradeTable(costume,r,allVars)+buildBurstTable(costume,r,allVars);

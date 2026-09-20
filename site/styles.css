@@ -3664,14 +3664,33 @@ button:hover,.buttonLike:hover{
   }
 }
 
-/* Global 12px typography */
+/* Global 11px typography */
 body *:not(.brandMark):not(.potentialGlyph):not(.characterCardFallback){
-  font-size:12px!important;
+  font-size:11px!important;
 }
 body,
 button,
 input,
 select,
 textarea{
-  font-size:12px!important;
+  font-size:11px!important;
+}
+
+/* Tighter outer page spacing */
+.sheetShell{
+  width:min(1620px,calc(100% - 6px));
+  max-width:1620px;
+  padding-left:0;
+  padding-right:0;
+}
+@media(min-width:1180px){
+  .sheetShell{
+    width:min(1620px,calc(100% - 4px));
+    max-width:1620px;
+  }
+}
+@media(max-width:760px){
+  .sheetShell{
+    width:calc(100% - 6px);
+  }
 }

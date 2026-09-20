@@ -31,9 +31,14 @@
     <div class="calculatorGrid">
       <aside class="leftSheet sheetPanel">
         <div class="characterHeader">
-          <span class="elementSigil" id="elementSigil">S</span>
-          <select id="character" aria-label="Character"></select>
-          <span id="rarityBadge" class="stars">★★★★★</span>
+          <span class="elementSigil" id="elementSigil"></span>
+          <div class="searchSelect" id="characterSearchWrap">
+            <input id="characterSearch" data-search-input="character" type="text" autocomplete="off"
+                   placeholder="Select character…" aria-label="Search character">
+            <div id="characterSearchMenu" class="searchSelectMenu" role="listbox"></div>
+            <select id="character" class="nativeSearchSelect" aria-label="Character"></select>
+          </div>
+          <span id="rarityBadge" class="stars"></span>
         </div>
 
         <div class="portraitPlaceholder leftPortrait" id="portraitBox">
@@ -45,7 +50,12 @@
         <section class="leftBuildControls">
           <label class="leftBuildWide">
             <span>Costume / Calculation</span>
-            <select id="costume" aria-label="Costume"></select>
+            <div class="searchSelect costumeSearchSelect" id="costumeSearchWrap">
+              <input id="costumeSearch" data-search-input="costume" type="text" autocomplete="off"
+                     placeholder="Select costume…" aria-label="Search costume">
+              <div id="costumeSearchMenu" class="searchSelectMenu" role="listbox"></div>
+              <select id="costume" class="nativeSearchSelect" aria-label="Costume"></select>
+            </div>
           </label>
           <label class="leftBuildWide">
             <span>Burst</span>

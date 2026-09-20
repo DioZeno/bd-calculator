@@ -1084,6 +1084,9 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
   overflow:auto;
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(116px,1fr));
+  grid-auto-rows:150px;
+  grid-auto-flow:row;
+  align-items:stretch;
   gap:10px;
   padding:14px;
   align-content:start;
@@ -1092,7 +1095,9 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .characterCard{
   position:relative;
   min-width:0;
-  aspect-ratio:4 / 5;
+  width:100%;
+  height:100%;
+  box-sizing:border-box;
   overflow:hidden;
   border:1px solid rgba(0,0,0,.28);
   border-radius:8px;
@@ -1105,7 +1110,6 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 }
 .characterCard:hover,
 .characterCard:focus-visible{
-  transform:translateY(-2px);
   outline:2px solid rgba(255,255,255,.55);
   outline-offset:1px;
 }
@@ -1195,6 +1199,7 @@ body.characterModalOpen{overflow:hidden}
   }
   .characterCardGrid{
     grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
+    grid-auto-rows:126px;
     padding:10px;
     gap:8px;
   }
@@ -1204,3 +1209,6 @@ body.characterModalOpen{overflow:hidden}
 .characterCardThumb{z-index:0}
 .characterCardFallback{z-index:0}
 .characterCardShade{z-index:1}
+
+.characterCard>*{pointer-events:none}
+.characterCard{isolation:isolate}

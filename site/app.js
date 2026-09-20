@@ -52,6 +52,8 @@ let gearState=clone(DEFAULT_GEAR);
 let catalogSource="";
 let potentialCharacterId="";
 let bondedCostumeId="";
+let characterModalElement="All";
+let characterModalRarity="All";
 let permanentPotentialLevels={};
 let bondPotentialLevels={minor_1_stat:4,minor_2_stat:2,major_1_stat:2,major_2_stat:2};
 
@@ -372,8 +374,8 @@ function setup(){
   $("#costume").disabled=true;
   fillProgressionSelects();
   wire();
-  initSearchableSelect("character");
   initSearchableSelect("costume");
+  initCharacterModal();
   showBlankSelectionState();
   const actualCostumeCount=costumes.filter(function(x){return !x.is_basic_attack;}).length;
   const gearCount=new Set(gearCatalog.map(function(x){return x.weapon_id;})).size;
@@ -444,17 +446,18 @@ function showBlankSelectionState(){
   $("#character").value="";
   $("#costume").innerHTML="";
   $("#costume").disabled=true;
-  syncSearchableSelect("character");
   syncSearchableSelect("costume");
-  $("#elementSigil").textContent="";
-  $("#rarityBadge").textContent="";
   $("#catalogCount").textContent="—";
   $("#gearGrid").innerHTML="";
-  setPortraitState("missing");
+  const portraitBox=$("#portraitBox");
+  if(portraitBox){
+    portraitBox.classList.remove("hasPortrait","loadingPortrait","noPortrait");
+    portraitBox.classList.add("chooseCharacter");
+  }
   $("#costumePortrait").dataset.mediaId="";
   $("#costumePortrait").removeAttribute("src");
   $("#portraitInitial").textContent="?";
-  $("#portraitElement").textContent="Select";
+  $("#portraitElement").textContent="Choose";
   ["sumHp","sumAtk","sumCr","sumCdmg","leftDef","leftMres","leftProperty","leftResist",
    "damageNormal","damageAverage","damageCritical","sumDamage"].forEach(function(id){
     const el=$("#"+id);if(el)el.textContent="—";
@@ -464,6 +467,118 @@ function showBlankSelectionState(){
   $("#skillProgression").innerHTML="";
   $("#targetBadge").textContent="—";
 }
+function characterElementClass(value){
+  const v=String(value||"").toLowerCase();
+  if(["fire","water","wind","light","dark"].includes(v))return "element-"+v;
+  return "element-none";
+}
+function characterThumbnailCostume(c){
+  return costumes
+    .filter(function(x){return x.character_id===c.__id&&!x.is_basic_attack&&costumeMediaId(x);})
+    .sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""));})[0]||null;
+}
+function characterThumbnailUrl(c){
+  const costume=characterThumbnailCostume(c);
+  return costume?costumePortraitUrl(costume):"";
+}
+function renderCharacterFilters(){
+  const elementBox=$("#characterElementFilters"),rarityBox=$("#characterRarityFilters");
+  if(!elementBox||!rarityBox)return;
+  const elements=["All"].concat(Array.from(new Set(characters.map(function(c){return c.ELE;}).filter(Boolean))).sort());
+  const rarities=["All"].concat(Array.from(new Set(characters.map(function(c){return String(c.RARITY||"");}).filter(Boolean))).sort(function(a,b){return Number(b)-Number(a);}));
+  elementBox.innerHTML=elements.map(function(v){
+    return '<button type="button" data-character-element="'+escapeHtml(v)+'" class="'+(characterModalElement===v?"active":"")+'">'+escapeHtml(v)+'</button>';
+  }).join("");
+  rarityBox.innerHTML=rarities.map(function(v){
+    return '<button type="button" data-character-rarity="'+escapeHtml(v)+'" class="'+(characterModalRarity===v?"active":"")+'">'+(v==="All"?"All":escapeHtml(v)+"★")+'</button>';
+  }).join("");
+}
+function renderCharacterCards(){
+  const grid=$("#characterCardGrid"),empty=$("#characterModalEmpty"),search=$("#characterModalSearch");
+  if(!grid)return;
+  const q=String(search&&search.value||"").trim().toLowerCase();
+  const current=$("#character").value;
+  const rows=characters.slice().sort(function(a,b){return a.Name.localeCompare(b.Name);}).filter(function(c){
+    const matchText=!q||String(c.Name||"").toLowerCase().includes(q);
+    const matchElement=characterModalElement==="All"||String(c.ELE||"")===characterModalElement;
+    const matchRarity=characterModalRarity==="All"||String(c.RARITY||"")===characterModalRarity;
+    return matchText&&matchElement&&matchRarity;
+  });
+  grid.innerHTML=rows.map(function(c){
+    const url=characterThumbnailUrl(c);
+    const elem=String(c.ELE||"Unknown");
+    const rarity=Number(c.RARITY)||5;
+    return '<button type="button" class="characterCard '+characterElementClass(elem)+(current===c.__id?" selected":"")+'" data-character-card="'+escapeHtml(c.__id)+'">'+
+      (url?'<img class="characterCardThumb" src="'+escapeHtml(url)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':'')+
+      '<span class="characterCardFallback">'+escapeHtml((c.Name||"?").slice(0,1).toUpperCase())+'</span>'+
+      '<span class="characterCardShade"></span>'+
+      '<span class="characterCardMeta"><strong>'+escapeHtml(c.Name)+'</strong><span><em>'+escapeHtml(elem)+'</em><em>'+"★".repeat(rarity)+'</em></span></span>'+
+      '</button>';
+  }).join("");
+  grid.querySelectorAll(".characterCardThumb").forEach(function(img){
+    img.addEventListener("load",function(){img.parentElement.classList.add("thumbLoaded");});
+    img.addEventListener("error",function(){img.remove();});
+  });
+  if(empty)empty.hidden=!!rows.length;
+}
+function openCharacterModal(){
+  const modal=$("#characterModal"),search=$("#characterModalSearch");
+  if(!modal)return;
+  characterModalElement="All";
+  characterModalRarity="All";
+  if(search)search.value="";
+  renderCharacterFilters();
+  renderCharacterCards();
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden","false");
+  document.body.classList.add("characterModalOpen");
+  setTimeout(function(){if(search)search.focus();},0);
+}
+function closeCharacterModal(){
+  const modal=$("#characterModal");
+  if(!modal)return;
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden","true");
+  document.body.classList.remove("characterModalOpen");
+  const portrait=$("#portraitBox");
+  if(portrait)portrait.focus();
+}
+function initCharacterModal(){
+  const portrait=$("#portraitBox"),modal=$("#characterModal"),search=$("#characterModalSearch");
+  if(!portrait||!modal)return;
+  portrait.addEventListener("click",openCharacterModal);
+  portrait.addEventListener("keydown",function(e){
+    if(e.key==="Enter"||e.key===" "){e.preventDefault();openCharacterModal();}
+  });
+  $("#characterModalClose").addEventListener("click",closeCharacterModal);
+  modal.querySelectorAll("[data-character-modal-close]").forEach(function(el){el.addEventListener("click",closeCharacterModal);});
+  if(search)search.addEventListener("input",renderCharacterCards);
+  $("#characterElementFilters").addEventListener("click",function(e){
+    const b=e.target.closest("[data-character-element]");
+    if(!b)return;
+    characterModalElement=b.dataset.characterElement;
+    renderCharacterFilters();
+    renderCharacterCards();
+  });
+  $("#characterRarityFilters").addEventListener("click",function(e){
+    const b=e.target.closest("[data-character-rarity]");
+    if(!b)return;
+    characterModalRarity=b.dataset.characterRarity;
+    renderCharacterFilters();
+    renderCharacterCards();
+  });
+  $("#characterCardGrid").addEventListener("click",function(e){
+    const card=e.target.closest("[data-character-card]");
+    if(!card)return;
+    $("#character").value=card.dataset.characterCard;
+    closeCharacterModal();
+    $("#character").dispatchEvent(new Event("change",{bubbles:true}));
+  });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&modal.classList.contains("open"))closeCharacterModal();
+  });
+}
+
 function fillProgressionSelects(){
   ["engraveLife","engraveStrength","engravePerseverance"].forEach(function(id){
     const el=$("#"+id);if(!el)return;
@@ -502,7 +617,7 @@ function costumePortraitUrl(costume){
 function setPortraitState(state){
   const box=$("#portraitBox");
   if(!box)return;
-  box.classList.remove("hasPortrait","loadingPortrait","noPortrait");
+  box.classList.remove("hasPortrait","loadingPortrait","noPortrait","chooseCharacter");
   if(state==="loaded")box.classList.add("hasPortrait");
   else if(state==="loading")box.classList.add("loadingPortrait");
   else box.classList.add("noPortrait");
@@ -925,7 +1040,6 @@ function wire(){
       render();return;
     }
     if(e.target.id==="character"){
-      syncSearchableSelect("character");
       if(!e.target.value){showBlankSelectionState();return;}
       potentialCharacterId="";bondedCostumeId="";permanentPotentialLevels={};
       updateLevelOptions();
@@ -1384,8 +1498,7 @@ function updateCostumePanel(r){
 function render(){
   if(!characters.length||!getChar())return;
   const r=compute(),c=r.c,atkPct=r.atkKey+"%";
-  $("#rarityBadge").textContent="★".repeat(Number(c.RARITY)||5);
-  $("#elementSigil").textContent=(c.ELE||"S").slice(0,1);$("#portraitInitial").textContent=(c.Name||"?").slice(0,1).toUpperCase();$("#portraitElement").textContent=c.ELE||"Element";updateCostumePortrait();
+  $("#portraitInitial").textContent=(c.Name||"?").slice(0,1).toUpperCase();$("#portraitElement").textContent=c.ELE||"Element";updateCostumePortrait();
   $("#charElement").textContent=c.ELE||"—";$("#detailElement").textContent=c.ELE||"—";$("#charRes").textContent=c.RES||"—";
   const activeExclusive=Object.keys(gearState).map(function(slot){
     const g=gearState[slot];

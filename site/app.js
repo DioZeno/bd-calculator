@@ -462,6 +462,8 @@ function showBlankSelectionState(){
     const el=$("#"+id);if(el)el.textContent="—";
   });
   $("#skillTitle").textContent="Select a character";
+  if($("#skillMultDisplay"))$("#skillMultDisplay").textContent="—";
+  if($("#hitsDisplay"))$("#hitsDisplay").textContent="—";
   $("#skillDescription").textContent="Search for a character above to begin.";
   $("#skillProgression").innerHTML="";
   $("#targetBadge").textContent="—";
@@ -1332,11 +1334,20 @@ function burstPrimaryBonus(burst,primary){
   const value=Number(burst.effects.value);
   return Number.isFinite(value)?value:0;
 }
+function updateSkillMetaDisplay(){
+  const c=getChar();
+  const atkLabel=c&&attackType(c)==="magic"?"MATK":"ATK";
+  const skill=Number($("#skillMult").value)||0;
+  const hits=Math.max(1,Number($("#hits").value)||1);
+  if($("#skillMultDisplay"))$("#skillMultDisplay").textContent=skill+"% "+atkLabel;
+  if($("#hitsDisplay"))$("#hitsDisplay").textContent=String(hits);
+}
 function syncCostumeUpgradeToCalculator(){
   const costume=getCostume();
   if(!costume||costume.is_basic_attack){
     $("#skillMult").value="100";
     $("#hits").value="1";
+    updateSkillMetaDisplay();
     return;
   }
   const dupe=Number($("#dupe").value)||0;
@@ -1351,6 +1362,7 @@ function syncCostumeUpgradeToCalculator(){
     }
   }
   $("#hits").value=String(inferCostumeHits(costume));
+  updateSkillMetaDisplay();
 }
 
 function currentDupeValue(obj,dupe){
@@ -1491,7 +1503,7 @@ function buildUpgradeTable(costume,r,allVars){
     return '<tr class="'+(className||"")+'"><th>'+escapeHtml(label)+'</th>'+
       values.map(function(v){return '<td>'+escapeHtml(v)+'</td>';}).join("")+'</tr>';
   };
-  let html='<table class="upgradeTable"><thead><tr><th>Upgrade</th>'+
+  let html='<table class="upgradeTable"><thead><tr><th class="upgradeTitleCell"><span class="tableIconTitle"><img src="./assets/skill-upgrade-burst.png" alt="">Costume Upgrade</span></th>'+
     levels.map(function(x){return '<th>+'+x+'</th>';}).join("")+'</tr></thead><tbody>';
   html+=row("SP",cols.map(function(x){return x.summary.sp==null?"—":x.summary.sp;}));
   html+=row("CD",cols.map(function(x){return x.summary.cd==null?"—":x.summary.cd+"T";}));
@@ -1536,8 +1548,8 @@ function buildBurstTable(costume,r,allVars){
     return '<td class="'+(className||"")+'">'+escapeHtml(value==null?"—":value)+'</td>';
   };
 
-  let html='<div class="burstTableWrap"><strong>Burst</strong>'+
-    '<table class="upgradeTable burstTable"><thead><tr><th>Burst</th>'+
+  let html='<div class="burstTableWrap"><strong class="burstTitle"><img src="./assets/skill-upgrade-burst.png" alt="">Burst</strong>'+
+    '<table class="upgradeTable burstTable"><thead><tr><th>Burst Stage</th>'+
     stages.map(function(x){return '<th>B'+x.stage+'</th>';}).join("")+
     '</tr></thead><tbody>';
 

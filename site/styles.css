@@ -3783,3 +3783,21 @@ body{
     overflow-x:auto;
   }
 }
+
+
+/* Balanced viewport margin */
+.sheetShell{
+  width:95%;
+  max-width:none;
+  margin-left:auto;
+  margin-right:auto;
+  padding-left:0;
+  padding-right:0;
+}
+@media(max-width:760px){
+  .sheetShell{
+    width:95%;
+    margin-left:auto;
+    margin-right:auto;
+  }
+}

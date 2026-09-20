@@ -3746,3 +3746,40 @@ textarea{
   --line:#303b47;
   --line-strong:#414d5a;
 }
+
+
+/* Hard viewport alignment: prevent centered overflow gutters */
+html,
+body{
+  width:100%;
+  max-width:100%;
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+}
+.sheetShell{
+  width:100%;
+  max-width:none;
+  min-width:0;
+  margin:0;
+  padding-left:1px;
+  padding-right:1px;
+}
+@media(max-width:1179px){
+  .sheetShell{
+    width:100%;
+    max-width:none;
+    margin:0;
+    padding-left:1px;
+    padding-right:1px;
+  }
+  .topBar{
+    margin-left:0;
+    margin-right:0;
+  }
+  .gearSheet,
+  .upgradeDamageComparison{
+    max-width:100%;
+    overflow-x:auto;
+  }
+}

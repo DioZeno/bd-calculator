@@ -1408,9 +1408,39 @@ function buildUpgradeDamageComparison(costume,r,allVars){
       deltaPcts.map(function(v,i){return '<td>'+(i===0?"Base":pctCell(v))+'</td>';}).join("")+
     '</tr></tbody></table>';
 
+  const utilityNotes=[];
+  const spValues=levels.map(function(dupe){
+    return costumeUpgradeSummary(costume,allVars,dupe).sp;
+  });
+  const spDrops=[];
+  for(let i=1;i<spValues.length;i++){
+    const prev=Number(spValues[i-1]),next=Number(spValues[i]);
+    if(Number.isFinite(prev)&&Number.isFinite(next)&&next<prev){
+      spDrops.push({level:i,from:prev,to:next,drop:prev-next});
+    }
+  }
+  if(spDrops.length){
+    utilityNotes.push("SP "+spDrops.map(function(x){
+      return "improves at +"+x.level+": "+x.from+" → "+x.to+" (-"+x.drop+" SP)";
+    }).join(", "));
+  }
+
+  const potential=potentialRecord(costume.id);
+  const rangeSlots=[1,2,3].filter(function(i){
+    return potential&&String(potential["skill_"+i+"_type"]||"").toLowerCase()==="range";
+  });
+  if(rangeSlots.length){
+    const enabled=rangeSlots.some(function(i){
+      const box=$("#skillPot"+i);
+      return box&&box.checked;
+    });
+    utilityNotes.push("Larger AoE available via Range Skill Potential"+(enabled?" (enabled)":""));
+  }
+
   const base=values[0],max=values[5];
   if(base==null||max==null){
-    review.textContent="Damage comparison is unavailable for this costume's current skill formula.";
+    review.textContent="Damage comparison is unavailable for this costume's current skill formula."+
+      (utilityNotes.length?" · "+utilityNotes.join(" · ")+".":"");
     return;
   }
 
@@ -1422,12 +1452,14 @@ function buildUpgradeDamageComparison(costume,r,allVars){
   });
 
   const totalText=(total>=0?"+":"")+fmt(total)+" ("+(totalPct>=0?"+":"")+totalPct.toFixed(1)+"%)";
+  let damageReview;
   if(bestIndex>0&&bestPct>0){
-    review.textContent="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · Biggest step gain: +"+
-      (bestIndex-1)+"→+"+bestIndex+" "+pctCell(bestPct)+".";
+    damageReview="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · Biggest step gain: +"+
+      (bestIndex-1)+"→+"+bestIndex+" "+pctCell(bestPct);
   }else{
-    review.textContent="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · No damage-increasing upgrade step detected.";
+    damageReview="+0 "+fmt(base)+" → +5 "+fmt(max)+" · "+totalText+" overall · No damage-increasing upgrade step detected";
   }
+  review.textContent=damageReview+(utilityNotes.length?" · "+utilityNotes.join(" · "):"")+".";
 }
 function buildUpgradeTable(costume,r,allVars){
   const primary=primaryDamageVariable(allVars);

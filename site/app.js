@@ -1244,7 +1244,7 @@ function buildUpgradeTable(costume,r,allVars){
     if(primary&&Number(primary.variable_index)===Number(v.variable_index))return false;
     return (v.dupe_values&&Object.keys(v.dupe_values).length)||/\$C\$4/i.test(v.formula||"");
   }).slice(0,4);
-  const levels=[1,2,3,4,5];
+  const levels=[0,1,2,3,4,5];
   const hits=inferCostumeHits(costume);
   const cols=levels.map(function(dupe){
     const summary=costumeUpgradeSummary(costume,allVars,dupe);

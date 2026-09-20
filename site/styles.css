@@ -1199,3 +1199,8 @@ body.characterModalOpen{overflow:hidden}
     gap:8px;
   }
 }
+
+.characterCard.thumbLoaded .characterCardFallback{display:none}
+.characterCardThumb{z-index:0}
+.characterCardFallback{z-index:0}
+.characterCardShade{z-index:1}

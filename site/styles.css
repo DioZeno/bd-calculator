@@ -716,19 +716,23 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 }
 .legacyPotentialHidden{display:none!important}
 
-.potentialProgressCell{grid-template-rows:34px 22px 24px}
+.potentialProgressCell{grid-template-rows:24px 22px 24px}
 .potentialProgressHead{gap:3px}
-.potentialGlyphImage{
+.skillPotentialStrip label{
+  min-height:67px;
+  grid-template-rows:32px 18px 17px;
+}
+.skillPotentialIcon{
   width:30px;
   height:30px;
-  border:0;
-  background:transparent;
-  flex:0 0 30px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-.potentialGlyphImage img{
+.skillPotentialIcon img{
   width:30px;
   height:30px;
   object-fit:contain;
   display:block;
 }
-:root[data-theme="dark"] .potentialGlyphImage img{filter:invert(1)}
+:root[data-theme="dark"] .skillPotentialIcon img{filter:invert(1)}

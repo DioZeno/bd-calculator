@@ -912,3 +912,290 @@ button:hover,.buttonLike:hover{filter:brightness(.97)}
 .portraitPlaceholder.loadingPortrait>span,
 .portraitPlaceholder.noPortrait>span{opacity:0}
 .portraitPlaceholder.hasPortrait .portraitStatus{display:none}
+
+.leftPortrait{
+  cursor:pointer;
+}
+.leftPortrait:focus-visible{
+  outline:2px solid #3da6ff;
+  outline-offset:2px;
+}
+.portraitPickHint{
+  position:absolute;
+  z-index:5;
+  left:10px;
+  right:10px;
+  bottom:10px;
+  min-height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 8px;
+  box-sizing:border-box;
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:6px;
+  background:rgba(10,16,20,.72);
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  backdrop-filter:blur(3px);
+  transition:opacity .15s ease;
+}
+.leftPortrait.hasPortrait .portraitPickHint{
+  opacity:0;
+}
+.leftPortrait:hover .portraitPickHint,
+.leftPortrait:focus-visible .portraitPickHint{
+  opacity:1;
+}
+.leftPortrait.chooseCharacter .portraitPickHint{
+  opacity:1;
+  bottom:50%;
+  transform:translateY(50%);
+  min-height:36px;
+  font-size:11px;
+}
+.leftPortrait.chooseCharacter .portraitStatus{display:none}
+.leftPortrait.chooseCharacter>small{display:none}
+
+.characterModal{
+  position:fixed;
+  inset:0;
+  z-index:300;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:28px;
+  box-sizing:border-box;
+}
+.characterModal.open{display:flex}
+.characterModalBackdrop{
+  position:absolute;
+  inset:0;
+  background:rgba(5,8,11,.72);
+  backdrop-filter:blur(3px);
+}
+.characterModalPanel{
+  position:relative;
+  z-index:1;
+  width:min(920px,94vw);
+  max-height:min(780px,90vh);
+  display:grid;
+  grid-template-rows:auto auto minmax(0,1fr);
+  overflow:hidden;
+  border:1px solid #202932;
+  border-radius:10px;
+  background:var(--sheet);
+  box-shadow:0 24px 70px rgba(0,0,0,.45);
+}
+.characterModalHeader{
+  min-height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:9px 12px 9px 16px;
+  box-sizing:border-box;
+  background:var(--header);
+  color:var(--header-ink);
+}
+.characterModalHeader>div{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.characterModalHeader strong{font-size:16px}
+.characterModalHeader small{font-size:10px;opacity:.7}
+.characterModalHeader button{
+  width:34px;
+  height:34px;
+  border:0;
+  border-radius:6px;
+  background:rgba(255,255,255,.1);
+  color:inherit;
+  font-size:25px;
+  line-height:1;
+  cursor:pointer;
+}
+.characterModalTools{
+  display:grid;
+  grid-template-columns:minmax(220px,1.4fr) minmax(280px,1fr) minmax(180px,.7fr);
+  gap:12px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--line-strong);
+  background:var(--cell);
+}
+.characterModalTools>input{
+  width:100%;
+  height:34px;
+  box-sizing:border-box;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--input);
+  color:var(--ink);
+  padding:0 10px;
+  font:inherit;
+  font-size:12px;
+  outline:none;
+}
+.characterModalTools>input:focus{border-color:#3da6ff}
+.characterFilterGroup{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.characterFilterGroup>span{
+  font-size:8px;
+  font-weight:800;
+  color:var(--muted);
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.characterFilterChips{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  overflow-x:auto;
+  scrollbar-width:thin;
+}
+.characterFilterChips button{
+  flex:0 0 auto;
+  min-height:24px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--input);
+  color:var(--ink);
+  padding:2px 9px;
+  font:inherit;
+  font-size:9px;
+  font-weight:800;
+  cursor:pointer;
+}
+.characterFilterChips button.active{
+  background:#26343f;
+  color:#fff;
+  border-color:#26343f;
+}
+.characterCardGrid{
+  min-height:0;
+  overflow:auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(116px,1fr));
+  gap:10px;
+  padding:14px;
+  align-content:start;
+  background:var(--sheet);
+}
+.characterCard{
+  position:relative;
+  min-width:0;
+  aspect-ratio:4 / 5;
+  overflow:hidden;
+  border:1px solid rgba(0,0,0,.28);
+  border-radius:8px;
+  padding:0;
+  background:#2b3339;
+  color:#fff;
+  cursor:pointer;
+  box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 3px 8px rgba(0,0,0,.18);
+  text-align:left;
+}
+.characterCard:hover,
+.characterCard:focus-visible{
+  transform:translateY(-2px);
+  outline:2px solid rgba(255,255,255,.55);
+  outline-offset:1px;
+}
+.characterCard.selected{
+  outline:3px solid #fff;
+  outline-offset:1px;
+}
+.characterCardThumb{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 16%;
+}
+.characterCardShade{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to bottom,transparent 38%,rgba(8,10,12,.2) 58%,rgba(8,10,12,.9) 100%);
+}
+.characterCard::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  mix-blend-mode:color;
+  opacity:.34;
+}
+.characterCard.element-fire::after{background:#d94b39}
+.characterCard.element-water::after{background:#378bd8}
+.characterCard.element-wind::after{background:#3fa76f}
+.characterCard.element-light::after{background:#dfb94a}
+.characterCard.element-dark::after{background:#7546a8}
+.characterCard.element-none::after{background:#69737b}
+.characterCardMeta{
+  position:absolute;
+  z-index:2;
+  left:7px;
+  right:7px;
+  bottom:7px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  text-shadow:0 1px 2px rgba(0,0,0,.9);
+}
+.characterCardMeta strong{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:11px;
+}
+.characterCardMeta span{
+  display:flex;
+  justify-content:space-between;
+  gap:4px;
+  font-size:8px;
+  font-weight:700;
+  opacity:.92;
+}
+.characterCardFallback{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+  font-weight:900;
+  color:rgba(255,255,255,.8);
+}
+.characterModalEmpty{
+  padding:38px 20px;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+}
+body.characterModalOpen{overflow:hidden}
+
+@media(max-width:780px){
+  .characterModal{padding:10px}
+  .characterModalPanel{
+    width:100%;
+    max-height:94vh;
+  }
+  .characterModalTools{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .characterCardGrid{
+    grid-template-columns:repeat(auto-fill,minmax(96px,1fr));
+    padding:10px;
+    gap:8px;
+  }
+}
